@@ -108,11 +108,11 @@ app.use("/api/contact", contact_1.default);
 app.get("/api/health", async (_req, res) => {
     try {
         await db_1.prisma.$queryRaw `SELECT 1`;
-        res.json({ status: "ok", db: "connected", ts: new Date().toISOString() });
+        res.json({ status: "ok", db: "connected", ts: new Date().toISOString(), v: "2" });
     }
     catch (e) {
         writeLog("ERROR", "Health check DB failed", { message: e.message });
-        res.status(500).json({ status: "error", db: "disconnected" });
+        res.status(500).json({ status: "error", db: "disconnected", v: "2", err: e.message?.slice(0, 100) });
     }
 });
 // 404
