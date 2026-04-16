@@ -72,16 +72,16 @@ router.post("/", async (req, res: Response): Promise<void> => {
     // WhatsApp notifications (non-blocking)
     (async () => {
       try {
-        const recipients: { name: string; phone: string | null }[] = [];
+        const recipients: { name: string; phone: string | null; email?: string | null }[] = [];
         // Assigned manager/admin
         if (assignedTo) {
-          const assigned = await prisma.adminUser.findUnique({ where: { id: assignedTo }, select: { name: true, phone: true } });
+          const assigned = await prisma.adminUser.findUnique({ where: { id: assignedTo }, select: { name: true, phone: true, email: true } });
           if (assigned) recipients.push(assigned);
         }
         // Super admin(s)
-        const superAdmins = await prisma.adminUser.findMany({ where: { role: "super_admin" }, select: { name: true, phone: true } });
+        const superAdmins = await prisma.adminUser.findMany({ where: { role: "super_admin" }, select: { name: true, phone: true, email: true } });
         for (const sa of superAdmins) {
-          if (!recipients.find(r => r.phone === sa.phone)) recipients.push(sa);
+          if (!recipients.find(r => r.email === sa.email)) recipients.push(sa);
         }
         await notifyNewLead({ fullName: full_name, phone, email, program, programLevel: program_level, city, source: form_source || "Website Form" }, recipients);
       } catch {}
@@ -113,14 +113,14 @@ router.post("/manual", auth, async (req: AuthRequest, res: Response): Promise<vo
     // WhatsApp notifications (non-blocking)
     (async () => {
       try {
-        const recipients: { name: string; phone: string | null }[] = [];
+        const recipients: { name: string; phone: string | null; email?: string | null }[] = [];
         if (assignedTo && assignedTo !== req.user!.id) {
-          const assigned = await prisma.adminUser.findUnique({ where: { id: assignedTo }, select: { name: true, phone: true } });
+          const assigned = await prisma.adminUser.findUnique({ where: { id: assignedTo }, select: { name: true, phone: true, email: true } });
           if (assigned) recipients.push(assigned);
         }
-        const superAdmins = await prisma.adminUser.findMany({ where: { role: "super_admin" }, select: { name: true, phone: true } });
+        const superAdmins = await prisma.adminUser.findMany({ where: { role: "super_admin" }, select: { name: true, phone: true, email: true } });
         for (const sa of superAdmins) {
-          if (!recipients.find(r => r.phone === sa.phone)) recipients.push(sa);
+          if (!recipients.find(r => r.email === sa.email)) recipients.push(sa);
         }
         await notifyNewLead({ fullName: full_name, phone, email, program, programLevel: program_level, city, source: "Manual Entry" }, recipients);
       } catch {}
