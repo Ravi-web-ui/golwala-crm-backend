@@ -57,7 +57,7 @@ router.post("/", auth, superOnly, async (req: AuthRequest, res: Response): Promi
 
 // PATCH /api/course-mappings/:id
 router.patch("/:id", auth, superOnly, async (req: AuthRequest, res: Response): Promise<void> => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id as string);
   const { ourCourseName, externalCourseName, genioCourseId, genioSpecializationId } = req.body;
   const data: any = {};
   if (ourCourseName?.trim())      data.ourCourseName         = ourCourseName.trim();
@@ -70,7 +70,7 @@ router.patch("/:id", auth, superOnly, async (req: AuthRequest, res: Response): P
 
 // DELETE /api/course-mappings/:id
 router.delete("/:id", auth, superOnly, async (req: AuthRequest, res: Response): Promise<void> => {
-  await prisma.courseMapping.delete({ where: { id: parseInt(req.params.id) } });
+  await prisma.courseMapping.delete({ where: { id: parseInt(req.params.id as string) } });
   res.json({ message: "Deleted" });
 });
 

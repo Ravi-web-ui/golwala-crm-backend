@@ -36,7 +36,7 @@ router.post("/", auth, superOnly, async (req: AuthRequest, res: Response): Promi
 
 // PATCH /api/institutes/:id
 router.patch("/:id", auth, superOnly, async (req: AuthRequest, res: Response): Promise<void> => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id as string);
   const { name, genioSubdomain, genioCollegeId } = req.body;
   const data: any = {};
   if (name?.trim())             data.name            = name.trim();
@@ -52,7 +52,7 @@ router.patch("/:id", auth, superOnly, async (req: AuthRequest, res: Response): P
 
 // DELETE /api/institutes/:id
 router.delete("/:id", auth, superOnly, async (req: AuthRequest, res: Response): Promise<void> => {
-  const id = parseInt(req.params.id);
+  const id = parseInt(req.params.id as string);
   await prisma.institute.delete({ where: { id } });
   res.json({ message: "Deleted" });
 });
@@ -61,7 +61,7 @@ router.delete("/:id", auth, superOnly, async (req: AuthRequest, res: Response): 
 
 // GET /api/institutes/:id/branches
 router.get("/:id/branches", auth, async (req: AuthRequest, res: Response): Promise<void> => {
-  const instituteId = parseInt(req.params.id);
+  const instituteId = parseInt(req.params.id as string);
   const branches = await prisma.branch.findMany({
     where: { instituteId },
     orderBy: { name: "asc" },
@@ -71,7 +71,7 @@ router.get("/:id/branches", auth, async (req: AuthRequest, res: Response): Promi
 
 // POST /api/institutes/:id/branches
 router.post("/:id/branches", auth, superOnly, async (req: AuthRequest, res: Response): Promise<void> => {
-  const instituteId = parseInt(req.params.id);
+  const instituteId = parseInt(req.params.id as string);
   const { name, genioBranchId } = req.body;
   if (!name?.trim()) { res.status(400).json({ error: "Branch name is required" }); return; }
   try {
@@ -91,7 +91,7 @@ router.post("/:id/branches", auth, superOnly, async (req: AuthRequest, res: Resp
 
 // PATCH /api/institutes/:id/branches/:branchId
 router.patch("/:id/branches/:branchId", auth, superOnly, async (req: AuthRequest, res: Response): Promise<void> => {
-  const branchId = parseInt(req.params.branchId);
+  const branchId = parseInt(req.params.branchId as string);
   const { name, genioBranchId } = req.body;
   const data: any = {};
   if (name?.trim())              data.name          = name.trim();
@@ -102,7 +102,7 @@ router.patch("/:id/branches/:branchId", auth, superOnly, async (req: AuthRequest
 
 // DELETE /api/institutes/:id/branches/:branchId
 router.delete("/:id/branches/:branchId", auth, superOnly, async (req: AuthRequest, res: Response): Promise<void> => {
-  const branchId = parseInt(req.params.branchId);
+  const branchId = parseInt(req.params.branchId as string);
   await prisma.branch.delete({ where: { id: branchId } });
   res.json({ message: "Deleted" });
 });

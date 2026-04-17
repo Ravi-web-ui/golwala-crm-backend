@@ -52,8 +52,8 @@ router.post("/", auth_1.auth, auth_1.superOnly, async (req, res) => {
         // WhatsApp notifications (non-blocking)
         (async () => {
             try {
-                const superAdmin = await db_1.prisma.adminUser.findFirst({ where: { role: "super_admin" }, select: { phone: true } });
-                await (0, notify_1.notifyNewAdmin)({ name, email, role: validRole, phone: phone || null }, superAdmin?.phone || null);
+                const superAdmin = await db_1.prisma.adminUser.findFirst({ where: { role: "super_admin" }, select: { phone: true, email: true } });
+                await (0, notify_1.notifyNewAdmin)({ name, email, role: validRole, phone: phone || null }, superAdmin?.phone || null, superAdmin?.email || null);
             }
             catch { }
         })();
