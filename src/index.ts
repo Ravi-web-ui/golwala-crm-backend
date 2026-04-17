@@ -37,8 +37,15 @@ function writeLog(level: string, msg: string, meta?: any) {
   else console.log(`[${level}] ${msg}`);
 }
 
-process.on("uncaughtException",  (err) => writeLog("ERROR", "Uncaught Exception",  { message: err.message, stack: err.stack }));
-process.on("unhandledRejection", (err: any) => writeLog("ERROR", "Unhandled Rejection", { message: err?.message, stack: err?.stack }));
+process.on("uncaughtException", (err) => {
+  writeLog("ERROR", "Uncaught Exception", { message: err.message, stack: err.stack });
+  // Must exit on Prisma engine panic — Passenger will restart the process
+  process.exit(1);
+});
+process.on("unhandledRejection", (err: any) => {
+  writeLog("ERROR", "Unhandled Rejection", { message: err?.message, stack: err?.stack });
+  process.exit(1);
+});
 
 // ── App ───────────────────────────────────────────────────────────────────────
 const app = express();
@@ -157,5 +164,7 @@ const seedStatuses = async () => {
 const PORT = parseInt(process.env.PORT || "5000");
 app.listen(PORT, "0.0.0.0", async () => {
   writeLog("INFO", `Server running on port ${PORT} [${isProd ? "production" : "development"}]`);
+  // Connect explicitly so engine initialises before first request
+  try { await prisma.$connect(); writeLog("INFO", "DB connected"); } catch (e: any) { writeLog("ERROR", "DB connect failed", { message: e.message }); }
   await seedStatuses();
 });
