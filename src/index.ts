@@ -6,16 +6,18 @@ import rateLimit from "express-rate-limit";
 import fs from "fs";
 import path from "path";
 
-import authRoutes       from "./routes/auth";
-import leadsRoutes      from "./routes/leads";
-import adminsRoutes     from "./routes/admins";
-import filtersRoutes    from "./routes/filters";
-import activitiesRoutes from "./routes/activities";
-import followupsRoutes  from "./routes/followups";
-import calllogsRoutes   from "./routes/calllogs";
-import reportsRoutes    from "./routes/reports";
-import statusesRoutes   from "./routes/statuses";
-import contactRoutes    from "./routes/contact";
+import authRoutes           from "./routes/auth";
+import leadsRoutes          from "./routes/leads";
+import adminsRoutes         from "./routes/admins";
+import filtersRoutes        from "./routes/filters";
+import activitiesRoutes     from "./routes/activities";
+import followupsRoutes      from "./routes/followups";
+import calllogsRoutes       from "./routes/calllogs";
+import reportsRoutes        from "./routes/reports";
+import statusesRoutes       from "./routes/statuses";
+import contactRoutes        from "./routes/contact";
+import institutesRoutes     from "./routes/institutes";
+import courseMappingsRoutes from "./routes/courseMappings";
 import { prisma }       from "./db";
 
 // ── Error log setup ───────────────────────────────────────────────────────────
@@ -103,8 +105,10 @@ app.use("/api/activities", activitiesRoutes);
 app.use("/api/followups",  followupsRoutes);
 app.use("/api/calllogs",   calllogsRoutes);
 app.use("/api/reports",    reportsRoutes);
-app.use("/api/statuses",   statusesRoutes);
-app.use("/api/contact",    contactRoutes);
+app.use("/api/statuses",        statusesRoutes);
+app.use("/api/contact",         contactRoutes);
+app.use("/api/institutes",      institutesRoutes);
+app.use("/api/course-mappings", courseMappingsRoutes);
 
 // Health check
 app.get("/api/health", async (_req, res) => {

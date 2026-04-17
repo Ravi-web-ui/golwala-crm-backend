@@ -3,6 +3,8 @@ import { prisma } from "../db";
 import { auth, AuthRequest } from "../middleware/auth";
 import { Prisma } from "@prisma/client";
 import { notifyNewLead } from "../services/notify";
+import https from "https";
+import http from "http";
 
 const router = Router();
 
@@ -18,6 +20,8 @@ function toSnake(lead: any) {
     state:          lead.state,
     program_level:  lead.programLevel,
     program:        lead.program,
+    institute:      lead.institute,
+    branch:         lead.branch,
     hear_about:     lead.hearAbout,
     status:         lead.status,
     assigned_to:    lead.assignedTo,
@@ -33,6 +37,121 @@ function toSnake(lead: any) {
     updated_at:     lead.updatedAt,
     assigned_admin: lead.assignedAdmin,
   };
+}
+
+// ── Push lead to Genio (fire-and-forget) ──────────────────────────────────────
+async function pushToGenio(params: {
+  subdomain:     string;
+  collegeId:     number;
+  branchId:      number;
+  courseId:      number | null;
+  specializationId: number | null;
+  name:          string;
+  contact:       string;
+  email:         string;
+  city:          string;
+  hearAbout:     string;
+  utmSource:     string;
+  utmMedium:     string;
+  utmCampaign:   string;
+  utmTerm:       string;
+  utmContent:    string;
+}): Promise<void> {
+  try {
+    const payload = new URLSearchParams({
+      name:                     params.name,
+      contact:                  params.contact,
+      email:                    params.email,
+      college:                  String(params.collegeId),
+      branch_id:                String(params.branchId),
+      course_id:                String(params.courseId ?? ""),
+      course_category_id:       String(params.specializationId ?? ""),
+      qualification:            "other",
+      city:                     params.city,
+      sourse_of_information_text: params.hearAbout || "RAV Website",
+      campaign_source:          params.utmSource,
+      campaign_medium:          params.utmMedium,
+      campaign_name:            params.utmCampaign,
+      campaign_term:            params.utmTerm,
+      campaign_content:         params.utmContent,
+    });
+
+    const url = `https://${params.subdomain}.mygenioworld.com/api/storelead`;
+    const body = payload.toString();
+
+    await new Promise<void>((resolve) => {
+      const lib = url.startsWith("https") ? https : http;
+      const req = lib.request(url, {
+        method: "POST",
+        headers: {
+          "Content-Type":  "application/x-www-form-urlencoded",
+          "Content-Length": Buffer.byteLength(body),
+        },
+      }, (res) => {
+        let data = "";
+        res.on("data", chunk => data += chunk);
+        res.on("end", () => {
+          console.log(`[Genio] ${params.subdomain} → ${res.statusCode}: ${data.slice(0, 200)}`);
+          resolve();
+        });
+      });
+      req.on("error", (err) => {
+        console.error(`[Genio] Push failed for ${params.subdomain}:`, err.message);
+        resolve();
+      });
+      req.setTimeout(8000, () => { req.destroy(); resolve(); });
+      req.write(body);
+      req.end();
+    });
+  } catch (err: any) {
+    console.error("[Genio] pushToGenio error:", err.message);
+  }
+}
+
+// ── Lookup course mapping and push to all matching institutes ─────────────────
+async function pushLeadToGenio(program: string | undefined, city: string | undefined, lead: any): Promise<void> {
+  if (!program) return;
+  try {
+    // Find all course mappings matching our course name
+    const mappings = await prisma.courseMapping.findMany({
+      where: { ourCourseName: program },
+      include: {
+        branch: {
+          include: { institute: true },
+        },
+      },
+    });
+    if (!mappings.length) {
+      console.log(`[Genio] No mapping found for course: ${program}`);
+      return;
+    }
+    for (const m of mappings) {
+      const inst = m.branch.institute;
+      if (!inst.genioSubdomain || !inst.genioCollegeId || !m.branch.genioBranchId) {
+        console.log(`[Genio] Skipping mapping ${m.id} — missing Genio IDs`);
+        continue;
+      }
+      await pushToGenio({
+        subdomain:        inst.genioSubdomain,
+        collegeId:        inst.genioCollegeId,
+        branchId:         m.branch.genioBranchId,
+        courseId:         m.genioCourseId,
+        specializationId: m.genioSpecializationId,
+        name:             lead.fullName,
+        contact:          lead.phone.replace(/^\+91/, ""),
+        email:            lead.email,
+        city:             city || "",
+        hearAbout:        lead.hearAbout || "RAV Website",
+        utmSource:        lead.utmSource  || "",
+        utmMedium:        lead.utmMedium  || "",
+        utmCampaign:      lead.utmCampaign|| "",
+        utmTerm:          lead.utmTerm    || "",
+        utmContent:       lead.utmContent || "",
+      });
+    }
+  } catch (err: any) {
+    console.error("[Genio] pushLeadToGenio error:", err.message);
+  }
 }
 
 // Auto-route: find manager assigned to this program
@@ -69,16 +188,18 @@ router.post("/", async (req, res: Response): Promise<void> => {
     });
     await prisma.activity.create({ data: { leadId: lead.id, adminId: assignedTo ?? 1, type: "lead_created", note: "Lead submitted via website form" } }).catch(() => {});
 
-    // WhatsApp notifications (non-blocking)
+    // Push to Genio + WhatsApp notifications (non-blocking)
     (async () => {
       try {
+        // Push to Genio
+        await pushLeadToGenio(program, city, lead);
+
+        // Notify admins
         const recipients: { name: string; phone: string | null; email?: string | null }[] = [];
-        // Assigned manager/admin
         if (assignedTo) {
           const assigned = await prisma.adminUser.findUnique({ where: { id: assignedTo }, select: { name: true, phone: true, email: true } });
           if (assigned) recipients.push(assigned);
         }
-        // Super admin(s)
         const superAdmins = await prisma.adminUser.findMany({ where: { role: "super_admin" }, select: { name: true, phone: true, email: true } });
         for (const sa of superAdmins) {
           if (!recipients.find(r => r.email === sa.email)) recipients.push(sa);

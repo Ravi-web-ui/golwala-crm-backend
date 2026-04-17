@@ -67,6 +67,8 @@ model Lead {
   state        String?    @db.VarChar(100)
   programLevel String?    @map("program_level") @db.VarChar(50)
   program      String?    @db.VarChar(255)
+  institute    String?    @db.VarChar(150)
+  branch       String?    @db.VarChar(150)
   hearAbout    String?    @map("hear_about")    @db.VarChar(100)
   status       String     @default("new")
   assignedTo   Int?       @map("assigned_to")
@@ -214,4 +216,44 @@ enum CallOutcome {
   not_answered
   busy
   callback_requested
+}
+
+model Institute {
+  id             Int      @id @default(autoincrement())
+  name           String   @unique @db.VarChar(150)
+  genioSubdomain String?  @map("genio_subdomain") @db.VarChar(100)
+  genioCollegeId Int?     @map("genio_college_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  branches Branch[]
+
+  @@map("institutes")
+}
+
+model Branch {
+  id            Int      @id @default(autoincrement())
+  instituteId   Int      @map("institute_id")
+  name          String   @db.VarChar(150)
+  genioBranchId Int?     @map("genio_branch_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  institute      Institute      @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+  courseMappings CourseMapping[]
+
+  @@unique([instituteId, name])
+  @@map("branches")
+}
+
+model CourseMapping {
+  id                    Int      @id @default(autoincrement())
+  branchId              Int      @map("branch_id")
+  ourCourseName         String   @map("our_course_name")         @db.VarChar(255)
+  externalCourseName    String   @map("external_course_name")    @db.VarChar(255)
+  genioCourseId         Int?     @map("genio_course_id")
+  genioSpecializationId Int?     @map("genio_specialization_id")
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@map("course_mappings")
 }
