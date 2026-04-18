@@ -141,7 +141,7 @@ async function pushLeadToGenio(program: string | undefined, city: string | undef
         contact:          lead.phone.replace(/^\+91/, ""),
         email:            lead.email,
         city:             city || "",
-        hearAbout:        lead.hearAbout || "RAV Website",
+        hearAbout:        "RAV Website",
         utmSource:        lead.utmSource  || "",
         utmMedium:        lead.utmMedium  || "",
         utmCampaign:      lead.utmCampaign|| "",
