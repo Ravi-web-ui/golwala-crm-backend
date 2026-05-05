@@ -18,6 +18,7 @@ import statusesRoutes       from "./routes/statuses";
 import contactRoutes        from "./routes/contact";
 import institutesRoutes     from "./routes/institutes";
 import courseMappingsRoutes from "./routes/courseMappings";
+import studentAdmissionsRoutes from "./routes/studentAdmissions";
 import { prisma }       from "./db";
 
 // ── Error log setup ───────────────────────────────────────────────────────────
@@ -116,6 +117,7 @@ app.use("/api/statuses",        statusesRoutes);
 app.use("/api/contact",         contactRoutes);
 app.use("/api/institutes",      institutesRoutes);
 app.use("/api/course-mappings", courseMappingsRoutes);
+app.use("/api/student-admissions", formLimiter, studentAdmissionsRoutes);
 
 // Health check
 app.get("/api/health", async (_req, res) => {
