@@ -1,6 +1,8 @@
 import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
+import { notifyStudentAdmission } from "../services/notify";
+import { generateStudentAdmissionPDF } from "../services/pdfGenerator";
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -216,6 +218,122 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
         subjectsOffered: true,
       },
     });
+
+    // Send email notifications with PDF
+    try {
+      // Generate PDF
+      const pdfBuffer = await generateStudentAdmissionPDF({
+        applicationNo: admission.applicationNo || "",
+        surname: admission.surname,
+        firstName: admission.firstName,
+        fatherName: admission.fatherName,
+        motherName: admission.motherName,
+        surnameMr: admission.surnameMr || undefined,
+        firstNameMr: admission.firstNameMr || undefined,
+        fatherNameMr: admission.fatherNameMr || undefined,
+        motherNameMr: admission.motherNameMr || undefined,
+        nameAsPerAadhar: admission.nameAsPerAadhar,
+        gender: admission.gender,
+        aadharNo: admission.aadharNo,
+        maritalStatus: admission.maritalStatus,
+        bloodGroup: admission.bloodGroup,
+        dob: admission.dob,
+        placeBirthCity: admission.placeBirthCity,
+        placeBirthTehsil: admission.placeBirthTehsil,
+        placeBirthState: admission.placeBirthState,
+        placeBirthCountry: admission.placeBirthCountry,
+        nationality: admission.nationality,
+        voterId: admission.voterId || undefined,
+        category: admission.category,
+        religion: admission.religion,
+        caste: admission.caste,
+        subCaste: admission.subCaste || undefined,
+        motherTongue: admission.motherTongue,
+        differentlyAbled: admission.differentlyAbled,
+        stream: admission.stream,
+        abcId: admission.abcId,
+        prnErnNo: admission.prnErnNo || undefined,
+        employmentStatus: admission.employmentStatus || undefined,
+        corrAddress: admission.corrAddress,
+        corrState: admission.corrState,
+        corrDistrict: admission.corrDistrict,
+        corrPincode: admission.corrPincode,
+        corrCity: admission.corrCity,
+        corrResidentialArea: admission.corrResidentialArea || undefined,
+        permAddress: admission.permAddress,
+        permState: admission.permState,
+        permDistrict: admission.permDistrict,
+        permPincode: admission.permPincode,
+        permCity: admission.permCity,
+        permResidentialArea: admission.permResidentialArea || undefined,
+        studentMobile: admission.studentMobile,
+        studentEmail: admission.studentEmail,
+        parentMobile: admission.parentMobile,
+        parentEmail: admission.parentEmail,
+        parentName: admission.parentName,
+        parentMotherName: admission.parentMotherName,
+        annualIncome: admission.annualIncome ? Number(admission.annualIncome) : undefined,
+        occupation: admission.occupation,
+        officeAddress: admission.officeAddress || undefined,
+        education: admission.education.map(edu => ({
+          examination: edu.examination || undefined,
+          board: edu.board || undefined,
+          yearOfPassing: edu.yearOfPassing || undefined,
+          instituteName: edu.instituteName || undefined,
+          seatNumber: edu.seatNumber || undefined,
+          obtainedMarks: edu.obtainedMarks ? Number(edu.obtainedMarks) : undefined,
+          maxMarks: edu.maxMarks ? Number(edu.maxMarks) : undefined,
+          percentage: edu.percentage ? Number(edu.percentage) : undefined,
+          grade: edu.grade || undefined,
+        })),
+        qualifyingSubjects: admission.qualifyingSubjects.map(sub => ({
+          subjectName: sub.subjectName || undefined,
+          obtainedMarks: sub.obtainedMarks ? Number(sub.obtainedMarks) : undefined,
+          maxMarks: sub.maxMarks ? Number(sub.maxMarks) : undefined,
+        })),
+        subjectsOffered: admission.subjectsOffered.map(sub => ({
+          srNo: sub.srNo || undefined,
+          groupName: sub.groupName || undefined,
+          subjectName: sub.subjectName || undefined,
+        })),
+      });
+
+      // Get admin emails (super_admin and admin roles)
+      const admins = await prisma.adminUser.findMany({
+        where: {
+          role: { in: ["super_admin", "admin"] },
+        },
+        select: { email: true },
+      });
+
+      const adminEmails = admins
+        .map((a: { email: string | null }) => a.email)
+        .filter((email: string | null): email is string => email !== null && email !== "");
+
+      // Send notifications with PDF
+      await notifyStudentAdmission(
+        {
+          applicationNo: admission.applicationNo || "",
+          firstName: admission.firstName,
+          surname: admission.surname,
+          fatherName: admission.fatherName,
+          motherName: admission.motherName,
+          studentEmail: admission.studentEmail,
+          studentMobile: admission.studentMobile,
+          parentMobile: admission.parentMobile,
+          stream: admission.stream,
+          dob: admission.dob,
+          gender: admission.gender,
+          category: admission.category,
+          corrCity: admission.corrCity,
+        },
+        adminEmails,
+        pdfBuffer
+      );
+    } catch (emailError: any) {
+      // Log email error but don't fail the request
+      console.error("Error sending admission emails:", emailError.message);
+    }
     
     res.status(201).json({
       success: true,

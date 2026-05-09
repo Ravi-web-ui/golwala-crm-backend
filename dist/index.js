@@ -22,6 +22,8 @@ const statuses_1 = __importDefault(require("./routes/statuses"));
 const contact_1 = __importDefault(require("./routes/contact"));
 const institutes_1 = __importDefault(require("./routes/institutes"));
 const courseMappings_1 = __importDefault(require("./routes/courseMappings"));
+const studentAdmissions_1 = __importDefault(require("./routes/studentAdmissions"));
+const studentApplicationsView_1 = __importDefault(require("./routes/studentApplicationsView"));
 const db_1 = require("./db");
 // ── Error log setup ───────────────────────────────────────────────────────────
 const LOG_DIR = path_1.default.join(process.cwd(), "logs");
@@ -115,6 +117,8 @@ app.use("/api/statuses", statuses_1.default);
 app.use("/api/contact", contact_1.default);
 app.use("/api/institutes", institutes_1.default);
 app.use("/api/course-mappings", courseMappings_1.default);
+app.use("/api/student-admissions", formLimiter, studentAdmissions_1.default);
+app.use("/api/student-applications-view", studentApplicationsView_1.default);
 // Health check
 app.get("/api/health", async (_req, res) => {
     try {

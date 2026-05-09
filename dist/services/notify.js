@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.notifyNewLead = notifyNewLead;
 exports.notifyNewAdmin = notifyNewAdmin;
+exports.notifyStudentAdmission = notifyStudentAdmission;
 const twilio_1 = __importDefault(require("twilio"));
 const nodemailer_1 = __importDefault(require("nodemailer"));
 // ── WhatsApp (Twilio) ─────────────────────────────────────────────────────────
@@ -49,14 +50,17 @@ function getTransporter() {
         auth: { user: EMAIL_USER, pass: EMAIL_PASS },
     });
 }
-async function sendEmail(to, subject, html) {
+async function sendEmail(to, subject, html, attachments) {
     if (!emailConfigured()) {
         console.log(`[NOTIFY] Email not configured — skipping email to ${to}`);
         console.log(`[NOTIFY] Add EMAIL_USER and EMAIL_PASS in .env to enable email notifications`);
         return;
     }
     try {
-        await getTransporter().sendMail({ from: EMAIL_FROM, to, subject, html });
+        const mailOptions = { from: EMAIL_FROM, to, subject, html };
+        if (attachments)
+            mailOptions.attachments = attachments;
+        await getTransporter().sendMail(mailOptions);
         console.log(`[NOTIFY] Email sent to ${to}`);
     }
     catch (err) {
@@ -191,4 +195,175 @@ async function notifyNewAdmin(newUser, superAdminPhone, superAdminEmail) {
     `;
         await sendEmail(newUser.email, `👋 Welcome to Golwala College CRM`, welcomeHtml);
     }
+}
+// ── Student Admission Email Templates ────────────────────────────────────────
+function studentAdmissionConfirmationHTML(application) {
+    return `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #eee;">
+      <div style="background:linear-gradient(135deg,#c0392b,#8e1a10);padding:24px;">
+        <h2 style="color:#fff;margin:0;font-size:20px;">🎓 Application Submitted Successfully</h2>
+        <p style="color:rgba(255,255,255,0.9);margin:8px 0 0;font-size:14px;">Golwala College - Student Admissions</p>
+      </div>
+      <div style="padding:28px;font-size:14px;color:#444;">
+        <p style="margin:0 0 16px;">Dear <strong>${application.firstName} ${application.surname}</strong>,</p>
+        <p style="margin:0 0 20px;line-height:1.6;">
+          Thank you for your application!
+        </p>
+        
+        <div style="background:#f8f9fa;border-left:4px solid #c0392b;padding:16px;margin:20px 0;border-radius:4px;">
+          <table style="width:100%;border-collapse:collapse;font-size:14px;">
+            <tr>
+              <td style="padding:6px 0;color:#666;width:160px;">📋 Application Number</td>
+              <td style="padding:6px 0;font-weight:700;color:#c0392b;font-size:16px;">${application.applicationNo}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;color:#666;">👤 Name</td>
+              <td style="padding:6px 0;font-weight:600;color:#222;">${application.firstName} ${application.surname}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;color:#666;">📚 Stream</td>
+              <td style="padding:6px 0;color:#222;">${application.stream}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;color:#666;">📅 Date of Birth</td>
+              <td style="padding:6px 0;color:#222;">${new Date(application.dob).toLocaleDateString('en-IN')}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div style="background:#fff8f8;border:1px solid #ffe0e0;padding:16px;margin:20px 0;border-radius:6px;">
+          <p style="margin:0 0 8px;font-weight:600;color:#c0392b;">📌 Important - Next Steps:</p>
+          <p style="margin:8px 0;line-height:1.8;color:#444;">
+            To complete the admission process, students are required to visit the College Office along with a hard copy of the <strong>University of Mumbai form</strong> and the <strong>College Application form</strong> (attached as PDF).
+          </p>
+          <ul style="margin:8px 0;padding-left:20px;color:#666;line-height:1.8;">
+            <li>Please save your <strong>Application Number</strong> for future reference</li>
+            <li>Print the attached PDF and bring it to the college office</li>
+            <li>Bring all original documents for verification</li>
+            <li>Our admissions team will guide you through the next steps</li>
+          </ul>
+        </div>
+
+        <p style="margin:20px 0 0;line-height:1.6;color:#666;">
+          If you have any questions, please contact our admissions office at 
+          <a href="mailto:info@golwalacollege.edu.in" style="color:#c0392b;text-decoration:none;">info@golwalacollege.edu.in</a>
+          or call <strong>+91 89768 39253</strong>
+        </p>
+
+        <div style="margin-top:24px;padding-top:20px;border-top:1px solid #eee;">
+          <p style="margin:0;font-size:13px;color:#999;">
+            Best regards,<br>
+            <strong style="color:#666;">Admissions Team</strong><br>
+            Laxmichand Golwala College of Commerce & Economics
+          </p>
+        </div>
+      </div>
+      <div style="padding:16px 28px;background:#f9f9f9;font-size:11px;color:#aaa;text-align:center;">
+        This is an automated confirmation email. Please do not reply to this email.
+      </div>
+    </div>
+  `;
+}
+function adminNewAdmissionHTML(application) {
+    return `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;border:1px solid #eee;">
+      <div style="background:linear-gradient(135deg,#c0392b,#8e1a10);padding:24px;">
+        <h2 style="color:#fff;margin:0;font-size:20px;">🎓 New Student Admission Application</h2>
+        <p style="color:rgba(255,255,255,0.9);margin:8px 0 0;font-size:14px;">Golwala College CRM</p>
+      </div>
+      <div style="padding:28px;font-size:14px;">
+        <p style="margin:0 0 20px;color:#444;">A new student admission application has been submitted and requires review.</p>
+        
+        <div style="background:#f8f9fa;border-left:4px solid #c0392b;padding:16px;margin:20px 0;border-radius:4px;">
+          <table style="width:100%;border-collapse:collapse;font-size:14px;">
+            <tr>
+              <td style="padding:8px 0;color:#666;width:160px;">📋 Application No.</td>
+              <td style="padding:8px 0;font-weight:700;color:#c0392b;font-size:16px;">${application.applicationNo}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;color:#666;">👤 Student Name</td>
+              <td style="padding:8px 0;font-weight:600;color:#222;">${application.firstName} ${application.surname}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;color:#666;">👨 Father's Name</td>
+              <td style="padding:8px 0;color:#222;">${application.fatherName}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;color:#666;">👩 Mother's Name</td>
+              <td style="padding:8px 0;color:#222;">${application.motherName}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;color:#666;">📧 Email</td>
+              <td style="padding:8px 0;color:#222;">${application.studentEmail}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;color:#666;">📞 Student Mobile</td>
+              <td style="padding:8px 0;color:#222;">${application.studentMobile}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;color:#666;">📞 Parent Mobile</td>
+              <td style="padding:8px 0;color:#222;">${application.parentMobile}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;color:#666;">📚 Stream</td>
+              <td style="padding:8px 0;color:#222;">${application.stream}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;color:#666;">📅 Date of Birth</td>
+              <td style="padding:8px 0;color:#222;">${new Date(application.dob).toLocaleDateString('en-IN')}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;color:#666;">⚧ Gender</td>
+              <td style="padding:8px 0;color:#222;">${application.gender}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;color:#666;">🏷️ Category</td>
+              <td style="padding:8px 0;color:#222;">${application.category}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;color:#666;">📍 City</td>
+              <td style="padding:8px 0;color:#222;">${application.city}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div style="margin-top:24px;">
+          <a href="${process.env.ADMIN_URL || 'https://admin.golwalacollege.edu.in'}/student-applications" 
+             style="display:inline-block;padding:12px 28px;background:linear-gradient(135deg,#c0392b,#8e1a10);color:#fff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600;">
+            View Application in CRM →
+          </a>
+        </div>
+
+        <div style="margin-top:24px;padding:16px;background:#fff8f8;border:1px solid #ffe0e0;border-radius:6px;">
+          <p style="margin:0;font-size:13px;color:#c0392b;font-weight:600;">⏰ Action Required</p>
+          <p style="margin:8px 0 0;font-size:13px;color:#666;">Please review this application and contact the student within 3-5 working days.</p>
+        </div>
+      </div>
+      <div style="padding:16px 28px;background:#f9f9f9;font-size:11px;color:#aaa;text-align:center;">
+        Golwala College CRM — Automated notification
+      </div>
+    </div>
+  `;
+}
+async function notifyStudentAdmission(application, adminEmails, pdfBuffer) {
+    // Send confirmation email to student with PDF attachment
+    if (application.studentEmail && pdfBuffer) {
+        const attachments = [
+            {
+                filename: `Application_${application.applicationNo}.pdf`,
+                content: pdfBuffer,
+                contentType: "application/pdf",
+            },
+        ];
+        await sendEmail(application.studentEmail, `🎓 Application Submitted - ${application.applicationNo}`, studentAdmissionConfirmationHTML({
+            applicationNo: application.applicationNo,
+            firstName: application.firstName,
+            surname: application.surname,
+            stream: application.stream,
+            dob: application.dob,
+        }), attachments);
+    }
+    // Skip admin notification for now (as per requirement)
+    // Admin notifications will be added later
+    console.log(`[NOTIFY] Student admission email sent to ${application.studentEmail} with PDF attachment`);
 }
