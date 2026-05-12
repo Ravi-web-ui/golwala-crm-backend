@@ -30,7 +30,7 @@ async function sendWhatsApp(to: string, body: string): Promise<void> {
   }
 }
 
-// ── Email (Gmail SMTP) ────────────────────────────────────────────────────────
+// ── Email SMTP Configuration ────────────────────────────────────────────────────────
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
 const EMAIL_FROM = process.env.EMAIL_FROM || `"Golwala College CRM" <${EMAIL_USER}>`;
@@ -42,9 +42,27 @@ function emailConfigured(): boolean {
 }
 
 function getTransporter() {
+  // Check if it's a Gmail account
+  if (EMAIL_USER?.includes('@gmail.com')) {
+    return nodemailer.createTransport({
+      service: "gmail",
+      auth: { user: EMAIL_USER!, pass: EMAIL_PASS! },
+    });
+  }
+  
+  // For institutional email (info@golwalacollege.edu.in), use generic SMTP
+  // This configuration works with most email providers
   return nodemailer.createTransport({
-    service: "gmail",
-    auth: { user: EMAIL_USER!, pass: EMAIL_PASS! },
+    host: "smtp.gmail.com", // Gmail SMTP relay (works for Google Workspace emails)
+    port: 587,
+    secure: false, // Use TLS
+    auth: { 
+      user: EMAIL_USER!, 
+      pass: EMAIL_PASS! 
+    },
+    tls: {
+      rejectUnauthorized: false // Allow self-signed certificates
+    }
   });
 }
 
@@ -232,8 +250,10 @@ function studentAdmissionConfirmationHTML(application: {
       </div>
       <div style="padding:28px;font-size:14px;color:#444;">
         <p style="margin:0 0 16px;">Dear <strong>${application.firstName} ${application.surname}</strong>,</p>
-        <p style="margin:0 0 20px;line-height:1.6;">
-          Thank you for your application!
+        <p style="margin:0 0 20px;line-height:1.8;color:#444;">
+          <strong>Thank you for your application!</strong><br><br>
+          To complete the admission process, students are required to visit the College Office with a hard copy of the <strong>University of Mumbai form</strong> and the <strong>College Application form</strong>.<br><br>
+          The downloadable PDF of the admission form has been sent to your registered email ID.
         </p>
         
         <div style="background:#f8f9fa;border-left:4px solid #c0392b;padding:16px;margin:20px 0;border-radius:4px;">
@@ -258,12 +278,9 @@ function studentAdmissionConfirmationHTML(application: {
         </div>
 
         <div style="background:#fff8f8;border:1px solid #ffe0e0;padding:16px;margin:20px 0;border-radius:6px;">
-          <p style="margin:0 0 8px;font-weight:600;color:#c0392b;">📌 Important - Next Steps:</p>
-          <p style="margin:8px 0;line-height:1.8;color:#444;">
-            To complete the admission process, students are required to visit the College Office along with a hard copy of the <strong>University of Mumbai form</strong> and the <strong>College Application form</strong> (attached as PDF).
-          </p>
+          <p style="margin:0 0 8px;font-weight:600;color:#c0392b;">📌 Important Information:</p>
           <ul style="margin:8px 0;padding-left:20px;color:#666;line-height:1.8;">
-            <li>Please save your <strong>Application Number</strong> for future reference</li>
+            <li>Please save your <strong>Application Number: ${application.applicationNo}</strong> for future reference</li>
             <li>Print the attached PDF and bring it to the college office</li>
             <li>Bring all original documents for verification</li>
             <li>Our admissions team will guide you through the next steps</li>
@@ -430,8 +447,40 @@ export async function notifyStudentAdmission(
     );
   }
 
-  // Skip admin notification for now (as per requirement)
-  // Admin notifications will be added later
+  // Send notification emails to admins with PDF attachment
+  if (adminEmails.length > 0 && pdfBuffer) {
+    const attachments = [
+      {
+        filename: `Application_${application.applicationNo}.pdf`,
+        content: pdfBuffer,
+        contentType: "application/pdf",
+      },
+    ];
+
+    for (const adminEmail of adminEmails) {
+      await sendEmail(
+        adminEmail,
+        `🎓 New Student Admission Application - ${application.applicationNo}`,
+        adminNewAdmissionHTML({
+          applicationNo: application.applicationNo,
+          firstName: application.firstName,
+          surname: application.surname,
+          fatherName: application.fatherName,
+          motherName: application.motherName,
+          studentEmail: application.studentEmail,
+          studentMobile: application.studentMobile,
+          parentMobile: application.parentMobile,
+          stream: application.stream,
+          dob: application.dob,
+          gender: application.gender,
+          category: application.category,
+          city: application.corrCity,
+        }),
+        attachments
+      );
+    }
+    console.log(`[NOTIFY] Admin notification emails sent to ${adminEmails.length} admin(s)`);
+  }
 
   console.log(`[NOTIFY] Student admission email sent to ${application.studentEmail} with PDF attachment`);
 }

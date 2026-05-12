@@ -94,151 +94,191 @@ export async function generateStudentAdmissionPDF(
 ): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({ size: "A4", margin: 40 });
+      const doc = new PDFDocument({ 
+        size: "A4", 
+        margin: 40,
+        bufferPages: true
+      });
       const chunks: Buffer[] = [];
 
       doc.on("data", (chunk) => chunks.push(chunk));
       doc.on("end", () => resolve(Buffer.concat(chunks)));
       doc.on("error", reject);
 
-      // Header
+      // College Header with Border
+      doc.rect(40, 40, 515, 100).stroke();
+      
+      // College Logo/Name (Left-aligned, smaller font)
       doc
-        .fontSize(20)
-        .fillColor("#c0392b")
-        .text("LAXMICHAND GOLWALA COLLEGE", { align: "center" })
+        .fontSize(18)
+        .fillColor("#8B0000")
+        .font("Helvetica-Bold")
+        .text("LAXMICHAND GOLWALA COLLEGE", 50, 50, { align: "left", width: 340 })
         .fontSize(12)
         .fillColor("#000")
-        .text("of Commerce & Economics", { align: "center" })
-        .moveDown(0.5)
-        .fontSize(10)
-        .text("M.G. Road, Ghatkopar East, Mumbai 400077", { align: "center" })
-        .moveDown(1);
+        .font("Helvetica")
+        .text("of Commerce & Economics", 50, 72, { align: "left", width: 340 })
+        .fontSize(9)
+        .text("M.G. Road, Ghatkopar East, Mumbai - 400077", 50, 90, { align: "left", width: 340 });
+
+      // Photo Placeholder (Right side of header - vertical/portrait)
+      doc.rect(420, 45, 125, 90).stroke();
+      
+      // Display photo if provided, otherwise show placeholder
+      if (data.photo) {
+        try {
+          // If photo is a base64 string or file path, display it
+          doc.image(data.photo, 420, 45, { width: 125, height: 90, fit: [125, 90], align: 'center', valign: 'center' });
+        } catch (err) {
+          doc.fontSize(9).fillColor("#666").text("Paste Photo Here", 425, 85, { width: 115, align: "center" });
+        }
+      } else {
+        doc.fontSize(9).fillColor("#666").text("Paste Photo Here", 425, 85, { width: 115, align: "center" });
+      }
 
       // Application Number Box
+      doc.rect(40, 155, 515, 35).fillAndStroke("#f0f0f0", "#000");
       doc
-        .fontSize(14)
-        .fillColor("#c0392b")
-        .text(`Application No: ${data.applicationNo}`, { align: "center" })
-        .moveDown(1);
+        .fontSize(16)
+        .fillColor("#8B0000")
+        .font("Helvetica-Bold")
+        .text(`APPLICATION NO: ${data.applicationNo}`, 40, 167, { align: "center", width: 515 });
 
-      // Section: Personal Details
-      addSection(doc, "PERSONAL DETAILS");
-      addField(doc, "Surname", data.surname);
-      addField(doc, "First Name", data.firstName);
-      addField(doc, "Father's Name", data.fatherName);
-      addField(doc, "Mother's Name", data.motherName);
-      if (data.surnameMr) addField(doc, "Surname (Marathi)", data.surnameMr);
-      if (data.firstNameMr) addField(doc, "First Name (Marathi)", data.firstNameMr);
-      addField(doc, "Name as per Aadhar", data.nameAsPerAadhar);
-      addField(doc, "Gender", data.gender);
-      addField(doc, "Aadhar Number", data.aadharNo);
-      addField(doc, "Marital Status", data.maritalStatus);
-      addField(doc, "Blood Group", data.bloodGroup);
-      addField(doc, "Date of Birth", new Date(data.dob).toLocaleDateString("en-IN"));
-      addField(doc, "Place of Birth", `${data.placeBirthCity}, ${data.placeBirthTehsil}, ${data.placeBirthState}, ${data.placeBirthCountry}`);
-      addField(doc, "Nationality", data.nationality);
-      if (data.voterId) addField(doc, "Voter ID", data.voterId);
-      addField(doc, "Category", data.category);
-      addField(doc, "Religion", data.religion);
-      addField(doc, "Caste", data.caste);
-      if (data.subCaste) addField(doc, "Sub-Caste", data.subCaste);
-      addField(doc, "Mother Tongue", data.motherTongue);
-      addField(doc, "Differently Abled", data.differentlyAbled);
-      addField(doc, "Stream", data.stream);
-      addField(doc, "ABC ID", data.abcId);
-      if (data.prnErnNo) addField(doc, "PRN/ERN No", data.prnErnNo);
-      if (data.employmentStatus) addField(doc, "Employment Status", data.employmentStatus);
+      let yPos = 210;
+      
+      // Section 1: Personal Details
+      yPos = addSectionHeader(doc, "1. PERSONAL DETAILS", yPos);
+      yPos = addTableRow(doc, "Surname", data.surname, "First Name", data.firstName, yPos);
+      yPos = addTableRow(doc, "Father's Name", data.fatherName, "Mother's Name", data.motherName, yPos);
+      
+      if (data.surnameMr || data.firstNameMr) {
+        yPos = addTableRow(doc, "Surname (Marathi)", data.surnameMr || "-", "First Name (Marathi)", data.firstNameMr || "-", yPos);
+      }
+      
+      yPos = addTableRow(doc, "Name as per Aadhar", data.nameAsPerAadhar, "Gender", data.gender, yPos);
+      yPos = addTableRow(doc, "Date of Birth", new Date(data.dob).toLocaleDateString("en-IN"), "Blood Group", data.bloodGroup, yPos);
+      yPos = addTableRow(doc, "Aadhar Number", data.aadharNo, "Marital Status", data.maritalStatus, yPos);
+      yPos = addTableRow(doc, "Category", data.category, "Religion", data.religion, yPos);
+      yPos = addTableRow(doc, "Caste", data.caste, "Mother Tongue", data.motherTongue, yPos);
+      yPos = addTableRow(doc, "Nationality", data.nationality, "Differently Abled", data.differentlyAbled, yPos);
+      
+      yPos += 10;
 
-      doc.moveDown(1);
+      // Section 2: Place of Birth
+      yPos = addSectionHeader(doc, "2. PLACE OF BIRTH", yPos);
+      yPos = addTableRow(doc, "City", data.placeBirthCity, "Tehsil", data.placeBirthTehsil, yPos);
+      yPos = addTableRow(doc, "State", data.placeBirthState, "Country", data.placeBirthCountry, yPos);
+      
+      yPos += 10;
 
-      // Section: Correspondence Address
-      addSection(doc, "CORRESPONDENCE ADDRESS");
-      addField(doc, "Address", data.corrAddress);
-      addField(doc, "City", data.corrCity);
-      addField(doc, "District", data.corrDistrict);
-      addField(doc, "State", data.corrState);
-      addField(doc, "Pincode", data.corrPincode);
-      if (data.corrResidentialArea) addField(doc, "Residential Area", data.corrResidentialArea);
+      // Section 3: Academic Details
+      yPos = addSectionHeader(doc, "3. ACADEMIC DETAILS", yPos);
+      yPos = addTableRow(doc, "Stream", data.stream, "ABC ID", data.abcId, yPos);
+      if (data.prnErnNo) {
+        yPos = addTableRow(doc, "PRN/ERN No", data.prnErnNo, "Employment Status", data.employmentStatus || "No", yPos);
+      }
+      
+      yPos += 10;
 
-      doc.moveDown(1);
-
-      // Section: Permanent Address
-      addSection(doc, "PERMANENT ADDRESS");
-      addField(doc, "Address", data.permAddress);
-      addField(doc, "City", data.permCity);
-      addField(doc, "District", data.permDistrict);
-      addField(doc, "State", data.permState);
-      addField(doc, "Pincode", data.permPincode);
-      if (data.permResidentialArea) addField(doc, "Residential Area", data.permResidentialArea);
-
-      doc.moveDown(1);
-
-      // Section: Contact Details
-      addSection(doc, "CONTACT DETAILS");
-      addField(doc, "Student Mobile", data.studentMobile);
-      addField(doc, "Student Email", data.studentEmail);
-      addField(doc, "Parent Mobile", data.parentMobile);
-      addField(doc, "Parent Email", data.parentEmail);
-
-      doc.moveDown(1);
-
-      // Section: Parent Details
-      addSection(doc, "PARENT/GUARDIAN DETAILS");
-      addField(doc, "Parent Name", data.parentName);
-      addField(doc, "Parent Mother Name", data.parentMotherName);
-      if (data.annualIncome) addField(doc, "Annual Income", `₹${data.annualIncome.toLocaleString("en-IN")}`);
-      addField(doc, "Occupation", data.occupation);
-      if (data.officeAddress) addField(doc, "Office Address", data.officeAddress);
-
-      // Add new page for education details if needed
-      if (data.education && data.education.length > 0) {
+      // Check if we need a new page
+      if (yPos > 650) {
         doc.addPage();
-        addSection(doc, "EDUCATION DETAILS");
+        yPos = 40;
+      }
+
+      // Section 4: Correspondence Address
+      yPos = addSectionHeader(doc, "4. CORRESPONDENCE ADDRESS", yPos);
+      yPos = addFullWidthRow(doc, "Address", data.corrAddress, yPos);
+      yPos = addTableRow(doc, "City", data.corrCity, "District", data.corrDistrict, yPos);
+      yPos = addTableRow(doc, "State", data.corrState, "Pincode", data.corrPincode, yPos);
+      
+      yPos += 10;
+
+      // Section 5: Permanent Address
+      yPos = addSectionHeader(doc, "5. PERMANENT ADDRESS", yPos);
+      yPos = addFullWidthRow(doc, "Address", data.permAddress, yPos);
+      yPos = addTableRow(doc, "City", data.permCity, "District", data.permDistrict, yPos);
+      yPos = addTableRow(doc, "State", data.permState, "Pincode", data.permPincode, yPos);
+      
+      yPos += 10;
+
+      // Check if we need a new page
+      if (yPos > 650) {
+        doc.addPage();
+        yPos = 40;
+      }
+
+      // Section 6: Contact Details
+      yPos = addSectionHeader(doc, "6. CONTACT DETAILS", yPos);
+      yPos = addTableRow(doc, "Student Mobile", data.studentMobile, "Student Email", data.studentEmail, yPos);
+      yPos = addTableRow(doc, "Parent Mobile", data.parentMobile, "Parent Email", data.parentEmail, yPos);
+      
+      yPos += 10;
+
+      // Section 7: Parent/Guardian Details
+      yPos = addSectionHeader(doc, "7. PARENT/GUARDIAN DETAILS", yPos);
+      yPos = addTableRow(doc, "Father/Guardian Name", data.parentName, "Mother Name", data.parentMotherName, yPos);
+      yPos = addTableRow(doc, "Occupation", data.occupation, "Annual Income", data.annualIncome ? `₹${data.annualIncome.toLocaleString("en-IN")}` : "-", yPos);
+      if (data.officeAddress) {
+        yPos = addFullWidthRow(doc, "Office Address", data.officeAddress, yPos);
+      }
+      
+      yPos += 10;
+
+      // Education Details
+      if (data.education && data.education.length > 0) {
+        if (yPos > 600) {
+          doc.addPage();
+          yPos = 40;
+        }
+        
+        yPos = addSectionHeader(doc, "8. EDUCATION DETAILS", yPos);
         
         data.education.forEach((edu, index) => {
           if (edu.examination) {
-            doc.fontSize(10).fillColor("#000").text(`${index + 1}. ${edu.examination}`, { underline: true });
-            if (edu.board) addField(doc, "  Board", edu.board, false);
-            if (edu.yearOfPassing) addField(doc, "  Year of Passing", edu.yearOfPassing, false);
-            if (edu.instituteName) addField(doc, "  Institute", edu.instituteName, false);
-            if (edu.seatNumber) addField(doc, "  Seat Number", edu.seatNumber, false);
-            if (edu.obtainedMarks) addField(doc, "  Marks", `${edu.obtainedMarks}/${edu.maxMarks}`, false);
-            if (edu.percentage) addField(doc, "  Percentage", `${edu.percentage}%`, false);
-            if (edu.grade) addField(doc, "  Grade", edu.grade, false);
-            doc.moveDown(0.5);
+            if (yPos > 700) {
+              doc.addPage();
+              yPos = 40;
+            }
+            
+            doc.fontSize(10).fillColor("#000").font("Helvetica-Bold")
+              .text(`${index + 1}. ${edu.examination}`, 50, yPos);
+            yPos += 15;
+            
+            if (edu.board) yPos = addTableRow(doc, "Board", edu.board, "Year", edu.yearOfPassing || "-", yPos);
+            if (edu.instituteName) yPos = addFullWidthRow(doc, "Institute", edu.instituteName, yPos);
+            if (edu.obtainedMarks) yPos = addTableRow(doc, "Marks", `${edu.obtainedMarks}/${edu.maxMarks}`, "Percentage", edu.percentage ? `${edu.percentage}%` : "-", yPos);
+            
+            yPos += 5;
           }
         });
       }
 
-      // Qualifying Subjects
-      if (data.qualifyingSubjects && data.qualifyingSubjects.length > 0) {
-        doc.moveDown(1);
-        addSection(doc, "LAST QUALIFYING SUBJECT DETAILS");
-        data.qualifyingSubjects.forEach((sub, index) => {
-          if (sub.subjectName) {
-            addField(doc, `Subject ${index + 1}`, `${sub.subjectName} - ${sub.obtainedMarks}/${sub.maxMarks}`, false);
-          }
-        });
+      // Signature Box at bottom
+      if (yPos > 650) {
+        doc.addPage();
+        yPos = 40;
       }
-
-      // Subjects Offered
-      if (data.subjectsOffered && data.subjectsOffered.length > 0) {
-        doc.moveDown(1);
-        addSection(doc, "SUBJECTS OFFERED");
-        data.subjectsOffered.forEach((sub) => {
-          if (sub.subjectName) {
-            addField(doc, sub.groupName || "Subject", sub.subjectName, false);
-          }
-        });
+      
+      yPos += 30;
+      doc.rect(380, yPos, 170, 60).stroke();
+      
+      // Display signature if provided, otherwise show placeholder
+      if (data.signature) {
+        try {
+          doc.image(data.signature, 385, yPos + 5, { width: 160, height: 40, fit: [160, 40], align: 'center', valign: 'top' });
+          doc.fontSize(9).fillColor("#666").text("Student Signature", 400, yPos + 48, { width: 130, align: "center" });
+        } catch (err) {
+          doc.fontSize(9).fillColor("#666").text("Student Signature", 400, yPos + 25, { width: 130, align: "center" });
+        }
+      } else {
+        doc.fontSize(9).fillColor("#666").text("Student Signature", 400, yPos + 25, { width: 130, align: "center" });
       }
 
       // Footer
-      doc.moveDown(2);
-      doc
-        .fontSize(10)
-        .fillColor("#666")
-        .text("This is a computer-generated document.", { align: "center" })
-        .text(`Generated on: ${new Date().toLocaleString("en-IN")}`, { align: "center" });
+      doc.fontSize(8).fillColor("#666")
+        .text("This is a computer-generated document.", 40, 770, { align: "center", width: 515 })
+        .text(`Generated on: ${new Date().toLocaleString("en-IN")}`, 40, 782, { align: "center", width: 515 });
 
       doc.end();
     } catch (error) {
@@ -247,22 +287,39 @@ export async function generateStudentAdmissionPDF(
   });
 }
 
-function addSection(doc: PDFKit.PDFDocument, title: string) {
-  doc
-    .fontSize(12)
-    .fillColor("#c0392b")
-    .text(title, { underline: true })
-    .fillColor("#000")
-    .moveDown(0.5);
+function addSectionHeader(doc: PDFKit.PDFDocument, title: string, yPos: number): number {
+  doc.rect(40, yPos, 515, 25).fillAndStroke("#e8e8e8", "#000");
+  doc.fontSize(11).fillColor("#000").font("Helvetica-Bold")
+    .text(title, 50, yPos + 7);
+  return yPos + 25;
 }
 
-function addField(doc: PDFKit.PDFDocument, label: string, value: string, moveDown: boolean = true) {
-  doc
-    .fontSize(10)
-    .fillColor("#666")
-    .text(label + ": ", { continued: true })
-    .fillColor("#000")
-    .text(value);
+function addTableRow(doc: PDFKit.PDFDocument, label1: string, value1: string, label2: string, value2: string, yPos: number): number {
+  const colWidth = 257.5;
   
-  if (moveDown) doc.moveDown(0.3);
+  // Left column
+  doc.rect(40, yPos, colWidth, 20).stroke();
+  doc.fontSize(8).fillColor("#666").font("Helvetica")
+    .text(label1, 45, yPos + 3, { width: colWidth - 10 });
+  doc.fontSize(9).fillColor("#000").font("Helvetica-Bold")
+    .text(value1, 45, yPos + 11, { width: colWidth - 10 });
+  
+  // Right column
+  doc.rect(40 + colWidth, yPos, colWidth, 20).stroke();
+  doc.fontSize(8).fillColor("#666").font("Helvetica")
+    .text(label2, 45 + colWidth, yPos + 3, { width: colWidth - 10 });
+  doc.fontSize(9).fillColor("#000").font("Helvetica-Bold")
+    .text(value2, 45 + colWidth, yPos + 11, { width: colWidth - 10 });
+  
+  return yPos + 20;
+}
+
+function addFullWidthRow(doc: PDFKit.PDFDocument, label: string, value: string, yPos: number): number {
+  doc.rect(40, yPos, 515, 20).stroke();
+  doc.fontSize(8).fillColor("#666").font("Helvetica")
+    .text(label, 45, yPos + 3, { width: 505 });
+  doc.fontSize(9).fillColor("#000").font("Helvetica-Bold")
+    .text(value, 45, yPos + 11, { width: 505 });
+  
+  return yPos + 20;
 }

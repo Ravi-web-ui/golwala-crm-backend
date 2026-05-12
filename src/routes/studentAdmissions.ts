@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
+import { auth } from "../middleware/auth";
 import { notifyStudentAdmission } from "../services/notify";
 import { generateStudentAdmissionPDF } from "../services/pdfGenerator";
 
@@ -310,26 +311,28 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
         .map((a: { email: string | null }) => a.email)
         .filter((email: string | null): email is string => email !== null && email !== "");
 
-      // Send notifications with PDF
-      await notifyStudentAdmission(
-        {
-          applicationNo: admission.applicationNo || "",
-          firstName: admission.firstName,
-          surname: admission.surname,
-          fatherName: admission.fatherName,
-          motherName: admission.motherName,
-          studentEmail: admission.studentEmail,
-          studentMobile: admission.studentMobile,
-          parentMobile: admission.parentMobile,
-          stream: admission.stream,
-          dob: admission.dob,
-          gender: admission.gender,
-          category: admission.category,
-          corrCity: admission.corrCity,
-        },
-        adminEmails,
-        pdfBuffer
-      );
+      // Send notifications with PDF to admins
+      if (adminEmails.length > 0) {
+        await notifyStudentAdmission(
+          {
+            applicationNo: admission.applicationNo || "",
+            firstName: admission.firstName,
+            surname: admission.surname,
+            fatherName: admission.fatherName,
+            motherName: admission.motherName,
+            studentEmail: admission.studentEmail,
+            studentMobile: admission.studentMobile,
+            parentMobile: admission.parentMobile,
+            stream: admission.stream,
+            dob: admission.dob,
+            gender: admission.gender,
+            category: admission.category,
+            corrCity: admission.corrCity,
+          },
+          adminEmails,
+          pdfBuffer
+        );
+      }
     } catch (emailError: any) {
       // Log email error but don't fail the request
       console.error("Error sending admission emails:", emailError.message);
@@ -363,7 +366,7 @@ router.post("/", async (req: Request, res: Response): Promise<void> => {
 });
 
 // GET /api/student-admissions - Get all admissions (for admin)
-router.get("/", async (req: Request, res: Response): Promise<void> => {
+router.get("/", auth, async (req: Request, res: Response): Promise<void> => {
   try {
     const { status, page = "1", limit = "50" } = req.query;
     
@@ -415,7 +418,7 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 });
 
 // GET /api/student-admissions/:id - Get single admission details
-router.get("/:id", async (req: Request, res: Response): Promise<void> => {
+router.get("/:id", auth, async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
     
@@ -445,6 +448,173 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({
       success: false,
       error: "Failed to fetch admission details",
+    });
+  }
+});
+
+// PATCH /api/student-admissions/:id/status - Update admission status
+router.patch("/:id/status", auth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    const validStatuses = ["new", "under_review", "approved", "rejected", "admission_done"];
+    if (!validStatuses.includes(status)) {
+      res.status(400).json({
+        success: false,
+        error: "Invalid status value",
+      });
+      return;
+    }
+    
+    const admission = await prisma.studentAdmission.update({
+      where: { id: parseInt(id) },
+      data: { status },
+    });
+    
+    res.json({
+      success: true,
+      message: "Status updated successfully",
+      data: admission,
+    });
+  } catch (error) {
+    console.error("Error updating status:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update status",
+    });
+  }
+});
+
+// DELETE /api/student-admissions/:id - Delete admission
+router.delete("/:id", auth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    
+    await prisma.studentAdmission.delete({
+      where: { id: parseInt(id) },
+    });
+    
+    res.json({
+      success: true,
+      message: "Admission deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting admission:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to delete admission",
+    });
+  }
+});
+
+// GET /api/student-admissions/:id/pdf - Get PDF for admission
+router.get("/:id/pdf", auth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    
+    const admission = await prisma.studentAdmission.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        education: true,
+        qualifyingSubjects: true,
+        subjectsOffered: true,
+      },
+    });
+    
+    if (!admission) {
+      res.status(404).json({
+        success: false,
+        error: "Admission not found",
+      });
+      return;
+    }
+    
+    // Generate PDF
+    const pdfBuffer = await generateStudentAdmissionPDF({
+      applicationNo: admission.applicationNo || "",
+      surname: admission.surname,
+      firstName: admission.firstName,
+      fatherName: admission.fatherName,
+      motherName: admission.motherName,
+      surnameMr: admission.surnameMr || undefined,
+      firstNameMr: admission.firstNameMr || undefined,
+      fatherNameMr: admission.fatherNameMr || undefined,
+      motherNameMr: admission.motherNameMr || undefined,
+      nameAsPerAadhar: admission.nameAsPerAadhar,
+      gender: admission.gender,
+      aadharNo: admission.aadharNo,
+      maritalStatus: admission.maritalStatus,
+      bloodGroup: admission.bloodGroup,
+      dob: admission.dob,
+      placeBirthCity: admission.placeBirthCity,
+      placeBirthTehsil: admission.placeBirthTehsil,
+      placeBirthState: admission.placeBirthState,
+      placeBirthCountry: admission.placeBirthCountry,
+      nationality: admission.nationality,
+      voterId: admission.voterId || undefined,
+      category: admission.category,
+      religion: admission.religion,
+      caste: admission.caste,
+      subCaste: admission.subCaste || undefined,
+      motherTongue: admission.motherTongue,
+      differentlyAbled: admission.differentlyAbled,
+      stream: admission.stream,
+      abcId: admission.abcId,
+      prnErnNo: admission.prnErnNo || undefined,
+      employmentStatus: admission.employmentStatus || undefined,
+      corrAddress: admission.corrAddress,
+      corrState: admission.corrState,
+      corrDistrict: admission.corrDistrict,
+      corrPincode: admission.corrPincode,
+      corrCity: admission.corrCity,
+      corrResidentialArea: admission.corrResidentialArea || undefined,
+      permAddress: admission.permAddress,
+      permState: admission.permState,
+      permDistrict: admission.permDistrict,
+      permPincode: admission.permPincode,
+      permCity: admission.permCity,
+      permResidentialArea: admission.permResidentialArea || undefined,
+      studentMobile: admission.studentMobile,
+      studentEmail: admission.studentEmail,
+      parentMobile: admission.parentMobile,
+      parentEmail: admission.parentEmail,
+      parentName: admission.parentName,
+      parentMotherName: admission.parentMotherName,
+      annualIncome: admission.annualIncome ? Number(admission.annualIncome) : undefined,
+      occupation: admission.occupation,
+      officeAddress: admission.officeAddress || undefined,
+      education: admission.education.map(edu => ({
+        examination: edu.examination || undefined,
+        board: edu.board || undefined,
+        yearOfPassing: edu.yearOfPassing || undefined,
+        instituteName: edu.instituteName || undefined,
+        seatNumber: edu.seatNumber || undefined,
+        obtainedMarks: edu.obtainedMarks ? Number(edu.obtainedMarks) : undefined,
+        maxMarks: edu.maxMarks ? Number(edu.maxMarks) : undefined,
+        percentage: edu.percentage ? Number(edu.percentage) : undefined,
+        grade: edu.grade || undefined,
+      })),
+      qualifyingSubjects: admission.qualifyingSubjects.map(sub => ({
+        subjectName: sub.subjectName || undefined,
+        obtainedMarks: sub.obtainedMarks ? Number(sub.obtainedMarks) : undefined,
+        maxMarks: sub.maxMarks ? Number(sub.maxMarks) : undefined,
+      })),
+      subjectsOffered: admission.subjectsOffered.map(sub => ({
+        srNo: sub.srNo || undefined,
+        groupName: sub.groupName || undefined,
+        subjectName: sub.subjectName || undefined,
+      })),
+    });
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="Application-${admission.applicationNo}.pdf"`);
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to generate PDF",
     });
   }
 });
