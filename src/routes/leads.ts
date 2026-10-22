@@ -141,7 +141,7 @@ async function pushLeadToGenio(program: string | undefined, city: string | undef
         contact:          lead.phone.replace(/^\+91/, ""),
         email:            lead.email,
         city:             city || "",
-        hearAbout:        "RAV Website",
+        hearAbout:        lead.hearAbout || "RAV Website",
         utmSource:        lead.utmSource  || "",
         utmMedium:        lead.utmMedium  || "",
         utmCampaign:      lead.utmCampaign|| "",
@@ -310,7 +310,7 @@ router.get("/", auth, async (req: AuthRequest, res: Response): Promise<void> => 
   const { status, program_level, city, state, program, hear_about, search, from, to, assigned_to, page = "1", limit = "10" } = req.query as Record<string, string>;
 
   const where: Prisma.LeadWhereInput = {};
-  if (req.user?.role === "manager") where.assignedTo = req.user!.id;
+  // Role-based filtering removed from here - applied later after other filters
   if (status) where.status = status;
   if (program_level) where.programLevel = program_level;
   if (city) where.city = city;
@@ -331,8 +331,11 @@ router.get("/", auth, async (req: AuthRequest, res: Response): Promise<void> => 
     ];
   }
 
-  // Program-based access restriction
-  if (req.user?.role !== "super_admin") {
+  // Role-based access restriction:
+  // - super_admin: sees ALL leads (no filtering)
+  // - manager: sees ALL leads (no filtering)
+  // - admin: sees ONLY assigned program leads
+  if (req.user?.role === "admin") {
     const assignments = await prisma.programAssignment.findMany({ where: { adminId: req.user!.id } });
     if (assignments.length > 0) {
       const programs = assignments.map((a: any) => a.program);
@@ -373,7 +376,19 @@ router.get("/meta/distinct", auth, async (_req: AuthRequest, res: Response): Pro
 router.get("/meta/stats", auth, async (req: AuthRequest, res: Response): Promise<void> => {
   const { from, to } = req.query as Record<string, string>;
   const where: Prisma.LeadWhereInput = {};
-  if (req.user?.role === "manager") where.assignedTo = req.user!.id;
+  
+  // Role-based access restriction:
+  // - super_admin: sees ALL leads
+  // - manager: sees ALL leads
+  // - admin: sees ONLY assigned program leads
+  if (req.user?.role === "admin") {
+    const assignments = await prisma.programAssignment.findMany({ where: { adminId: req.user!.id } });
+    if (assignments.length > 0) {
+      const programs = assignments.map((a: any) => a.program);
+      where.program = { in: programs };
+    }
+  }
+  
   if (from || to) {
     where.createdAt = {};
     if (from) where.createdAt.gte = new Date(from + "T00:00:00+05:30");
@@ -395,7 +410,19 @@ router.get("/meta/stats", auth, async (req: AuthRequest, res: Response): Promise
 // ── Kanban ────────────────────────────────────────────────────────────────────
 router.get("/kanban", auth, async (req: AuthRequest, res: Response): Promise<void> => {
   const where: Prisma.LeadWhereInput = {};
-  if (req.user?.role === "manager") where.assignedTo = req.user!.id;
+  
+  // Role-based access restriction:
+  // - super_admin: sees ALL leads
+  // - manager: sees ALL leads
+  // - admin: sees ONLY assigned program leads
+  if (req.user?.role === "admin") {
+    const assignments = await prisma.programAssignment.findMany({ where: { adminId: req.user!.id } });
+    if (assignments.length > 0) {
+      const programs = assignments.map((a: any) => a.program);
+      where.program = { in: programs };
+    }
+  }
+  
   const leads = await prisma.lead.findMany({
     where,
     select: { id: true, fullName: true, phone: true, countryCode: true, email: true, program: true, programLevel: true, status: true, assignedTo: true, createdAt: true, assignedAdmin: { select: { name: true } } },

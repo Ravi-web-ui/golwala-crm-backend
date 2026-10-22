@@ -3,12 +3,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const client_1 = require("@prisma/client");
 const zod_1 = require("zod");
+const auth_1 = require("../middleware/auth");
 const notify_1 = require("../services/notify");
 const pdfGenerator_1 = require("../services/pdfGenerator");
 const router = (0, express_1.Router)();
 const prisma = new client_1.PrismaClient();
 // Validation schema
 const studentAdmissionSchema = zod_1.z.object({
+    // Program Selection (optional for backward compatibility)
+    programCategory: zod_1.z.string().optional(),
+    programType: zod_1.z.string().optional(),
+    programName: zod_1.z.string().optional(),
     // Personal Details
     surname: zod_1.z.string().min(1),
     firstName: zod_1.z.string().min(1),
@@ -112,6 +117,9 @@ router.post("/", async (req, res) => {
         const admission = await prisma.studentAdmission.create({
             data: {
                 applicationNo,
+                programCategory: validatedData.programCategory,
+                programType: validatedData.programType,
+                programName: validatedData.programName,
                 surname: validatedData.surname,
                 firstName: validatedData.firstName,
                 fatherName: validatedData.fatherName,
@@ -202,122 +210,178 @@ router.post("/", async (req, res) => {
                 subjectsOffered: true,
             },
         });
-        // Send email notifications with PDF
-        try {
-            // Generate PDF
-            const pdfBuffer = await (0, pdfGenerator_1.generateStudentAdmissionPDF)({
-                applicationNo: admission.applicationNo || "",
-                surname: admission.surname,
-                firstName: admission.firstName,
-                fatherName: admission.fatherName,
-                motherName: admission.motherName,
-                surnameMr: admission.surnameMr || undefined,
-                firstNameMr: admission.firstNameMr || undefined,
-                fatherNameMr: admission.fatherNameMr || undefined,
-                motherNameMr: admission.motherNameMr || undefined,
-                nameAsPerAadhar: admission.nameAsPerAadhar,
-                gender: admission.gender,
-                aadharNo: admission.aadharNo,
-                maritalStatus: admission.maritalStatus,
-                bloodGroup: admission.bloodGroup,
-                dob: admission.dob,
-                placeBirthCity: admission.placeBirthCity,
-                placeBirthTehsil: admission.placeBirthTehsil,
-                placeBirthState: admission.placeBirthState,
-                placeBirthCountry: admission.placeBirthCountry,
-                nationality: admission.nationality,
-                voterId: admission.voterId || undefined,
-                category: admission.category,
-                religion: admission.religion,
-                caste: admission.caste,
-                subCaste: admission.subCaste || undefined,
-                motherTongue: admission.motherTongue,
-                differentlyAbled: admission.differentlyAbled,
-                stream: admission.stream,
-                abcId: admission.abcId,
-                prnErnNo: admission.prnErnNo || undefined,
-                employmentStatus: admission.employmentStatus || undefined,
-                corrAddress: admission.corrAddress,
-                corrState: admission.corrState,
-                corrDistrict: admission.corrDistrict,
-                corrPincode: admission.corrPincode,
-                corrCity: admission.corrCity,
-                corrResidentialArea: admission.corrResidentialArea || undefined,
-                permAddress: admission.permAddress,
-                permState: admission.permState,
-                permDistrict: admission.permDistrict,
-                permPincode: admission.permPincode,
-                permCity: admission.permCity,
-                permResidentialArea: admission.permResidentialArea || undefined,
-                studentMobile: admission.studentMobile,
-                studentEmail: admission.studentEmail,
-                parentMobile: admission.parentMobile,
-                parentEmail: admission.parentEmail,
-                parentName: admission.parentName,
-                parentMotherName: admission.parentMotherName,
-                annualIncome: admission.annualIncome ? Number(admission.annualIncome) : undefined,
-                occupation: admission.occupation,
-                officeAddress: admission.officeAddress || undefined,
-                education: admission.education.map(edu => ({
-                    examination: edu.examination || undefined,
-                    board: edu.board || undefined,
-                    yearOfPassing: edu.yearOfPassing || undefined,
-                    instituteName: edu.instituteName || undefined,
-                    seatNumber: edu.seatNumber || undefined,
-                    obtainedMarks: edu.obtainedMarks ? Number(edu.obtainedMarks) : undefined,
-                    maxMarks: edu.maxMarks ? Number(edu.maxMarks) : undefined,
-                    percentage: edu.percentage ? Number(edu.percentage) : undefined,
-                    grade: edu.grade || undefined,
-                })),
-                qualifyingSubjects: admission.qualifyingSubjects.map(sub => ({
-                    subjectName: sub.subjectName || undefined,
-                    obtainedMarks: sub.obtainedMarks ? Number(sub.obtainedMarks) : undefined,
-                    maxMarks: sub.maxMarks ? Number(sub.maxMarks) : undefined,
-                })),
-                subjectsOffered: admission.subjectsOffered.map(sub => ({
-                    srNo: sub.srNo || undefined,
-                    groupName: sub.groupName || undefined,
-                    subjectName: sub.subjectName || undefined,
-                })),
-            });
-            // Get admin emails (super_admin and admin roles)
-            const admins = await prisma.adminUser.findMany({
-                where: {
-                    role: { in: ["super_admin", "admin"] },
-                },
-                select: { email: true },
-            });
-            const adminEmails = admins
-                .map((a) => a.email)
-                .filter((email) => email !== null && email !== "");
-            // Send notifications with PDF
-            await (0, notify_1.notifyStudentAdmission)({
-                applicationNo: admission.applicationNo || "",
-                firstName: admission.firstName,
-                surname: admission.surname,
-                fatherName: admission.fatherName,
-                motherName: admission.motherName,
-                studentEmail: admission.studentEmail,
-                studentMobile: admission.studentMobile,
-                parentMobile: admission.parentMobile,
-                stream: admission.stream,
-                dob: admission.dob,
-                gender: admission.gender,
-                category: admission.category,
-                corrCity: admission.corrCity,
-            }, adminEmails, pdfBuffer);
-        }
-        catch (emailError) {
-            // Log email error but don't fail the request
-            console.error("Error sending admission emails:", emailError.message);
-        }
+        // Return success response immediately
         res.status(201).json({
             success: true,
-            message: "Student admission application submitted successfully",
             data: {
                 applicationNo: admission.applicationNo,
                 id: admission.id,
             },
+            message: "Application submitted successfully. Confirmation email will be sent shortly.",
+        });
+        // Send email notifications with PDF asynchronously (in background)
+        // This runs after the response is sent, so user doesn't wait
+        setImmediate(async () => {
+            try {
+                console.log(`[ASYNC EMAIL] Starting email process for application ${admission.applicationNo}`);
+                // Generate PDF
+                const pdfBuffer = await (0, pdfGenerator_1.generateStudentAdmissionPDF)({
+                    applicationNo: admission.applicationNo || "",
+                    programCategory: admission.programCategory || undefined,
+                    programType: admission.programType || undefined,
+                    programName: admission.programName || undefined,
+                    surname: admission.surname,
+                    firstName: admission.firstName,
+                    fatherName: admission.fatherName,
+                    motherName: admission.motherName,
+                    surnameMr: admission.surnameMr || undefined,
+                    firstNameMr: admission.firstNameMr || undefined,
+                    fatherNameMr: admission.fatherNameMr || undefined,
+                    motherNameMr: admission.motherNameMr || undefined,
+                    nameAsPerAadhar: admission.nameAsPerAadhar,
+                    gender: admission.gender,
+                    aadharNo: admission.aadharNo,
+                    maritalStatus: admission.maritalStatus,
+                    bloodGroup: admission.bloodGroup,
+                    dob: admission.dob,
+                    placeBirthCity: admission.placeBirthCity,
+                    placeBirthTehsil: admission.placeBirthTehsil,
+                    placeBirthState: admission.placeBirthState,
+                    placeBirthCountry: admission.placeBirthCountry,
+                    nationality: admission.nationality,
+                    voterId: admission.voterId || undefined,
+                    category: admission.category,
+                    religion: admission.religion,
+                    caste: admission.caste,
+                    subCaste: admission.subCaste || undefined,
+                    motherTongue: admission.motherTongue,
+                    differentlyAbled: admission.differentlyAbled,
+                    stream: admission.stream,
+                    abcId: admission.abcId,
+                    prnErnNo: admission.prnErnNo || undefined,
+                    employmentStatus: admission.employmentStatus || undefined,
+                    corrAddress: admission.corrAddress,
+                    corrState: admission.corrState,
+                    corrDistrict: admission.corrDistrict,
+                    corrPincode: admission.corrPincode,
+                    corrCity: admission.corrCity,
+                    corrResidentialArea: admission.corrResidentialArea || undefined,
+                    permAddress: admission.permAddress,
+                    permState: admission.permState,
+                    permDistrict: admission.permDistrict,
+                    permPincode: admission.permPincode,
+                    permCity: admission.permCity,
+                    permResidentialArea: admission.permResidentialArea || undefined,
+                    studentMobile: admission.studentMobile,
+                    studentEmail: admission.studentEmail,
+                    parentMobile: admission.parentMobile,
+                    parentEmail: admission.parentEmail,
+                    parentName: admission.parentName,
+                    parentMotherName: admission.parentMotherName,
+                    annualIncome: admission.annualIncome ? Number(admission.annualIncome) : undefined,
+                    occupation: admission.occupation,
+                    officeAddress: admission.officeAddress || undefined,
+                    photo: admission.photo || undefined,
+                    signature: admission.signature || undefined,
+                    education: admission.education.map(edu => ({
+                        examination: edu.examination || undefined,
+                        board: edu.board || undefined,
+                        yearOfPassing: edu.yearOfPassing || undefined,
+                        instituteName: edu.instituteName || undefined,
+                        seatNumber: edu.seatNumber || undefined,
+                        obtainedMarks: edu.obtainedMarks ? Number(edu.obtainedMarks) : undefined,
+                        maxMarks: edu.maxMarks ? Number(edu.maxMarks) : undefined,
+                        percentage: edu.percentage ? Number(edu.percentage) : undefined,
+                        grade: edu.grade || undefined,
+                    })),
+                    qualifyingSubjects: admission.qualifyingSubjects.map(sub => ({
+                        subjectName: sub.subjectName || undefined,
+                        obtainedMarks: sub.obtainedMarks ? Number(sub.obtainedMarks) : undefined,
+                        maxMarks: sub.maxMarks ? Number(sub.maxMarks) : undefined,
+                    })),
+                    subjectsOffered: admission.subjectsOffered.map(sub => ({
+                        srNo: sub.srNo || undefined,
+                        groupName: sub.groupName || undefined,
+                        subjectName: sub.subjectName || undefined,
+                    })),
+                });
+                console.log(`[ASYNC EMAIL] PDF generated for application ${admission.applicationNo}`);
+                // Get admin emails - only notify admins assigned to this program
+                let adminEmails = [];
+                // Always notify super_admin
+                const superAdmins = await prisma.adminUser.findMany({
+                    where: { role: "super_admin" },
+                    select: { email: true },
+                });
+                adminEmails = superAdmins
+                    .map((a) => a.email)
+                    .filter((email) => email !== null && email !== "");
+                // If programName exists, find admins assigned to this program
+                if (admission.programName) {
+                    const assignedAdmins = await prisma.adminUser.findMany({
+                        where: {
+                            role: "admin",
+                            programAssignments: {
+                                some: {
+                                    OR: [
+                                        { program: admission.programName },
+                                        { program: admission.stream },
+                                    ],
+                                },
+                            },
+                        },
+                        select: { email: true },
+                    });
+                    const assignedEmails = assignedAdmins
+                        .map((a) => a.email)
+                        .filter((email) => email !== null && email !== "");
+                    adminEmails = [...adminEmails, ...assignedEmails];
+                }
+                else {
+                    // Fallback: if no programName, find admins assigned to this stream
+                    const assignedAdmins = await prisma.adminUser.findMany({
+                        where: {
+                            role: "admin",
+                            programAssignments: {
+                                some: {
+                                    program: admission.stream,
+                                },
+                            },
+                        },
+                        select: { email: true },
+                    });
+                    const assignedEmails = assignedAdmins
+                        .map((a) => a.email)
+                        .filter((email) => email !== null && email !== "");
+                    adminEmails = [...adminEmails, ...assignedEmails];
+                }
+                // Remove duplicates
+                adminEmails = [...new Set(adminEmails)];
+                console.log(`[ASYNC EMAIL] Found ${adminEmails.length} admin(s) to notify for application ${admission.applicationNo}`);
+                // Send notifications with PDF to admins
+                if (adminEmails.length > 0) {
+                    await (0, notify_1.notifyStudentAdmission)({
+                        applicationNo: admission.applicationNo || "",
+                        firstName: admission.firstName,
+                        surname: admission.surname,
+                        fatherName: admission.fatherName,
+                        motherName: admission.motherName,
+                        studentEmail: admission.studentEmail,
+                        studentMobile: admission.studentMobile,
+                        parentMobile: admission.parentMobile,
+                        stream: admission.stream,
+                        dob: admission.dob,
+                        gender: admission.gender,
+                        category: admission.category,
+                        corrCity: admission.corrCity,
+                    }, adminEmails, pdfBuffer);
+                }
+                console.log(`[ASYNC EMAIL] Successfully sent emails for application ${admission.applicationNo}`);
+            }
+            catch (emailError) {
+                // Log email error but application is already saved
+                console.error(`[ASYNC EMAIL] Error sending admission emails for ${admission.applicationNo}:`, emailError.message);
+            }
         });
     }
     catch (error) {
@@ -337,15 +401,63 @@ router.post("/", async (req, res) => {
     }
 });
 // GET /api/student-admissions - Get all admissions (for admin)
-router.get("/", async (req, res) => {
+router.get("/", auth_1.auth, async (req, res) => {
     try {
-        const { status, page = "1", limit = "50" } = req.query;
+        const { status, page = "1", limit = "50", search } = req.query;
         const pageNum = parseInt(page);
         const limitNum = parseInt(limit);
         const skip = (pageNum - 1) * limitNum;
         const where = {};
+        // Status filter
         if (status)
             where.status = status;
+        // Search functionality
+        if (search && typeof search === 'string' && search.trim()) {
+            const searchTerm = search.trim();
+            where.OR = [
+                { applicationNo: { contains: searchTerm, mode: 'insensitive' } },
+                { firstName: { contains: searchTerm, mode: 'insensitive' } },
+                { surname: { contains: searchTerm, mode: 'insensitive' } },
+                { studentEmail: { contains: searchTerm, mode: 'insensitive' } },
+                { studentMobile: { contains: searchTerm } },
+            ];
+        }
+        // Role-based access restriction:
+        // - super_admin: sees ALL applications (no filtering)
+        // - manager: sees ALL applications (no filtering)
+        // - admin: sees ONLY assigned program applications
+        if (req.user?.role === "admin") {
+            const assignments = await prisma.programAssignment.findMany({
+                where: { adminId: req.user.id }
+            });
+            if (assignments.length > 0) {
+                const programs = assignments.map((a) => a.program);
+                // Add program filtering using AND condition to combine with existing filters
+                const programFilter = {
+                    OR: [
+                        { stream: { in: programs } },
+                        { programName: { in: programs } }
+                    ]
+                };
+                // If there's already an OR condition (from search), we need to combine them with AND
+                if (where.OR) {
+                    const searchOR = where.OR;
+                    delete where.OR;
+                    where.AND = [
+                        { OR: searchOR },
+                        programFilter
+                    ];
+                }
+                else {
+                    // No search, just add program filter directly
+                    where.OR = programFilter.OR;
+                }
+            }
+            else {
+                // Admin has no program assignments - show nothing
+                where.id = -1;
+            }
+        }
         const [admissions, total] = await Promise.all([
             prisma.studentAdmission.findMany({
                 where,
@@ -359,6 +471,7 @@ router.get("/", async (req, res) => {
                     surname: true,
                     studentEmail: true,
                     studentMobile: true,
+                    programName: true,
                     stream: true,
                     status: true,
                     createdAt: true,
@@ -385,8 +498,60 @@ router.get("/", async (req, res) => {
         });
     }
 });
+// GET /api/student-admissions/stats - Get admission statistics
+router.get("/stats", auth_1.auth, async (req, res) => {
+    try {
+        const baseWhere = {};
+        // Role-based access restriction:
+        // - super_admin: sees ALL applications
+        // - manager: sees ALL applications
+        // - admin: sees ONLY assigned program applications
+        if (req.user?.role === "admin") {
+            const assignments = await prisma.programAssignment.findMany({
+                where: { adminId: req.user.id }
+            });
+            if (assignments.length > 0) {
+                const programs = assignments.map((a) => a.program);
+                baseWhere.OR = [
+                    { stream: { in: programs } },
+                    { programName: { in: programs } }
+                ];
+            }
+            else {
+                // Admin has no program assignments - show zero stats
+                baseWhere.id = -1;
+            }
+        }
+        const [total, newCount, underReview, approved, rejected, admissionDone] = await Promise.all([
+            prisma.studentAdmission.count({ where: baseWhere }),
+            prisma.studentAdmission.count({ where: { ...baseWhere, status: "new" } }),
+            prisma.studentAdmission.count({ where: { ...baseWhere, status: "under_review" } }),
+            prisma.studentAdmission.count({ where: { ...baseWhere, status: "approved" } }),
+            prisma.studentAdmission.count({ where: { ...baseWhere, status: "rejected" } }),
+            prisma.studentAdmission.count({ where: { ...baseWhere, status: "admission_done" } }),
+        ]);
+        res.json({
+            success: true,
+            data: {
+                total,
+                new: newCount,
+                under_review: underReview,
+                approved,
+                rejected,
+                admission_done: admissionDone,
+            },
+        });
+    }
+    catch (error) {
+        console.error("Error fetching stats:", error);
+        res.status(500).json({
+            success: false,
+            error: "Failed to fetch statistics",
+        });
+    }
+});
 // GET /api/student-admissions/:id - Get single admission details
-router.get("/:id", async (req, res) => {
+router.get("/:id", auth_1.auth, async (req, res) => {
     try {
         const { id } = req.params;
         const admission = await prisma.studentAdmission.findUnique({
@@ -414,6 +579,169 @@ router.get("/:id", async (req, res) => {
         res.status(500).json({
             success: false,
             error: "Failed to fetch admission details",
+        });
+    }
+});
+// PATCH /api/student-admissions/:id/status - Update admission status
+router.patch("/:id/status", auth_1.auth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        const validStatuses = ["new", "under_review", "approved", "rejected", "admission_done"];
+        if (!validStatuses.includes(status)) {
+            res.status(400).json({
+                success: false,
+                error: "Invalid status value",
+            });
+            return;
+        }
+        const admission = await prisma.studentAdmission.update({
+            where: { id: parseInt(id) },
+            data: { status },
+        });
+        res.json({
+            success: true,
+            message: "Status updated successfully",
+            data: admission,
+        });
+    }
+    catch (error) {
+        console.error("Error updating status:", error);
+        res.status(500).json({
+            success: false,
+            error: "Failed to update status",
+        });
+    }
+});
+// DELETE /api/student-admissions/:id - Delete admission
+router.delete("/:id", auth_1.auth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        await prisma.studentAdmission.delete({
+            where: { id: parseInt(id) },
+        });
+        res.json({
+            success: true,
+            message: "Admission deleted successfully",
+        });
+    }
+    catch (error) {
+        console.error("Error deleting admission:", error);
+        res.status(500).json({
+            success: false,
+            error: "Failed to delete admission",
+        });
+    }
+});
+// GET /api/student-admissions/:id/pdf - Get PDF for admission
+router.get("/:id/pdf", auth_1.auth, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const admission = await prisma.studentAdmission.findUnique({
+            where: { id: parseInt(id) },
+            include: {
+                education: true,
+                qualifyingSubjects: true,
+                subjectsOffered: true,
+            },
+        });
+        if (!admission) {
+            res.status(404).json({
+                success: false,
+                error: "Admission not found",
+            });
+            return;
+        }
+        // Generate PDF
+        const pdfBuffer = await (0, pdfGenerator_1.generateStudentAdmissionPDF)({
+            applicationNo: admission.applicationNo || "",
+            programCategory: admission.programCategory || undefined,
+            programType: admission.programType || undefined,
+            programName: admission.programName || undefined,
+            surname: admission.surname,
+            firstName: admission.firstName,
+            fatherName: admission.fatherName,
+            motherName: admission.motherName,
+            surnameMr: admission.surnameMr || undefined,
+            firstNameMr: admission.firstNameMr || undefined,
+            fatherNameMr: admission.fatherNameMr || undefined,
+            motherNameMr: admission.motherNameMr || undefined,
+            nameAsPerAadhar: admission.nameAsPerAadhar,
+            gender: admission.gender,
+            aadharNo: admission.aadharNo,
+            maritalStatus: admission.maritalStatus,
+            bloodGroup: admission.bloodGroup,
+            dob: admission.dob,
+            placeBirthCity: admission.placeBirthCity,
+            placeBirthTehsil: admission.placeBirthTehsil,
+            placeBirthState: admission.placeBirthState,
+            placeBirthCountry: admission.placeBirthCountry,
+            nationality: admission.nationality,
+            voterId: admission.voterId || undefined,
+            category: admission.category,
+            religion: admission.religion,
+            caste: admission.caste,
+            subCaste: admission.subCaste || undefined,
+            motherTongue: admission.motherTongue,
+            differentlyAbled: admission.differentlyAbled,
+            stream: admission.stream,
+            abcId: admission.abcId,
+            prnErnNo: admission.prnErnNo || undefined,
+            employmentStatus: admission.employmentStatus || undefined,
+            corrAddress: admission.corrAddress,
+            corrState: admission.corrState,
+            corrDistrict: admission.corrDistrict,
+            corrPincode: admission.corrPincode,
+            corrCity: admission.corrCity,
+            corrResidentialArea: admission.corrResidentialArea || undefined,
+            permAddress: admission.permAddress,
+            permState: admission.permState,
+            permDistrict: admission.permDistrict,
+            permPincode: admission.permPincode,
+            permCity: admission.permCity,
+            permResidentialArea: admission.permResidentialArea || undefined,
+            studentMobile: admission.studentMobile,
+            studentEmail: admission.studentEmail,
+            parentMobile: admission.parentMobile,
+            parentEmail: admission.parentEmail,
+            parentName: admission.parentName,
+            parentMotherName: admission.parentMotherName,
+            annualIncome: admission.annualIncome ? Number(admission.annualIncome) : undefined,
+            occupation: admission.occupation,
+            officeAddress: admission.officeAddress || undefined,
+            education: admission.education.map(edu => ({
+                examination: edu.examination || undefined,
+                board: edu.board || undefined,
+                yearOfPassing: edu.yearOfPassing || undefined,
+                instituteName: edu.instituteName || undefined,
+                seatNumber: edu.seatNumber || undefined,
+                obtainedMarks: edu.obtainedMarks ? Number(edu.obtainedMarks) : undefined,
+                maxMarks: edu.maxMarks ? Number(edu.maxMarks) : undefined,
+                percentage: edu.percentage ? Number(edu.percentage) : undefined,
+                grade: edu.grade || undefined,
+            })),
+            qualifyingSubjects: admission.qualifyingSubjects.map(sub => ({
+                subjectName: sub.subjectName || undefined,
+                obtainedMarks: sub.obtainedMarks ? Number(sub.obtainedMarks) : undefined,
+                maxMarks: sub.maxMarks ? Number(sub.maxMarks) : undefined,
+            })),
+            subjectsOffered: admission.subjectsOffered.map(sub => ({
+                srNo: sub.srNo || undefined,
+                groupName: sub.groupName || undefined,
+                subjectName: sub.subjectName || undefined,
+            })),
+            photo: admission.photo || undefined,
+            signature: admission.signature || undefined,
+        });
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="Application-${admission.applicationNo}.pdf"`);
+        res.send(pdfBuffer);
+    }
+    catch (error) {
+        console.error("Error generating PDF:", error);
+        res.status(500).json({
+            success: false,
+            error: "Failed to generate PDF",
         });
     }
 });

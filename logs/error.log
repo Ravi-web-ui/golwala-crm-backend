@@ -79,3 +79,328 @@
 {"ts":"2026-04-14T19:37:57.225Z","level":"INFO","msg":"Server running on port 5000 [development]"}
 {"ts":"2026-04-14T19:38:03.754Z","level":"INFO","msg":"Server running on port 5000 [development]"}
 {"ts":"2026-04-15T04:55:41.522Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-04-15T11:44:55.223Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-04-16T05:46:50.179Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-04-16T06:17:41.321Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-04-16T11:34:54.278Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-04-16T11:35:00.591Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-04-16T11:35:06.872Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-04-16T11:35:14.278Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-04-27T05:45:17.849Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-04-27T05:45:21.964Z","level":"ERROR","msg":"DB connect failed","meta":{"message":"Can't reach database server at `localhost:3306`\n\nPlease make sure your database server is running at `localhost:3306`."}}
+{"ts":"2026-04-27T05:45:26.045Z","level":"ERROR","msg":"Seed failed","meta":{"message":"\nInvalid `prisma.leadStatusConfig.count()` invocation in\nD:\\golwalacollege\\crm-backend\\src\\index.ts:143:49\n\n  140 // ── Seed default statuses ─────────────────────────────────────────────────────\n  141 const seedStatuses = async () => {\n  142   try {\n→ 143     const count = await prisma.leadStatusConfig.count(\nCan't reach database server at `localhost:3306`\n\nPlease make sure your database server is running at `localhost:3306`."}}
+{"ts":"2026-05-05T11:24:21.322Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-05T11:24:25.412Z","level":"ERROR","msg":"DB connect failed","meta":{"message":"Can't reach database server at `localhost:3306`\n\nPlease make sure your database server is running at `localhost:3306`."}}
+{"ts":"2026-05-05T11:24:29.551Z","level":"ERROR","msg":"Seed failed","meta":{"message":"\nInvalid `prisma.leadStatusConfig.count()` invocation in\nD:\\golwalacollege\\crm-backend\\src\\index.ts:143:49\n\n  140 // ── Seed default statuses ─────────────────────────────────────────────────────\n  141 const seedStatuses = async () => {\n  142   try {\n→ 143     const count = await prisma.leadStatusConfig.count(\nCan't reach database server at `localhost:3306`\n\nPlease make sure your database server is running at `localhost:3306`."}}
+{"ts":"2026-05-05T12:47:15.575Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-05T12:47:24.974Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-05T12:47:29.063Z","level":"ERROR","msg":"DB connect failed","meta":{"message":"Can't reach database server at `localhost:3306`\n\nPlease make sure your database server is running at `localhost:3306`."}}
+{"ts":"2026-05-05T12:47:33.163Z","level":"ERROR","msg":"Seed failed","meta":{"message":"\nInvalid `prisma.leadStatusConfig.count()` invocation in\nD:\\golwalacollege\\crm-backend\\src\\index.ts:145:49\n\n  142 // ── Seed default statuses ─────────────────────────────────────────────────────\n  143 const seedStatuses = async () => {\n  144   try {\n→ 145     const count = await prisma.leadStatusConfig.count(\nCan't reach database server at `localhost:3306`\n\nPlease make sure your database server is running at `localhost:3306`."}}
+{"ts":"2026-05-05T12:48:47.720Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-05T12:48:51.817Z","level":"ERROR","msg":"DB connect failed","meta":{"message":"Can't reach database server at `localhost:3306`\n\nPlease make sure your database server is running at `localhost:3306`."}}
+{"ts":"2026-05-05T12:48:55.993Z","level":"ERROR","msg":"Seed failed","meta":{"message":"\nInvalid `prisma.leadStatusConfig.count()` invocation in\nD:\\golwalacollege\\crm-backend\\src\\index.ts:145:49\n\n  142 // ── Seed default statuses ─────────────────────────────────────────────────────\n  143 const seedStatuses = async () => {\n  144   try {\n→ 145     const count = await prisma.leadStatusConfig.count(\nCan't reach database server at `localhost:3306`\n\nPlease make sure your database server is running at `localhost:3306`."}}
+{"ts":"2026-05-09T03:34:39.858Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-09T03:34:43.982Z","level":"ERROR","msg":"DB connect failed","meta":{"message":"Can't reach database server at `localhost:3306`\n\nPlease make sure your database server is running at `localhost:3306`."}}
+{"ts":"2026-05-09T03:34:48.094Z","level":"ERROR","msg":"Seed failed","meta":{"message":"\nInvalid `prisma.leadStatusConfig.count()` invocation in\nD:\\golwalacollege\\crm-backend\\src\\index.ts:147:49\n\n  144 // ── Seed default statuses ─────────────────────────────────────────────────────\n  145 const seedStatuses = async () => {\n  146   try {\n→ 147     const count = await prisma.leadStatusConfig.count(\nCan't reach database server at `localhost:3306`\n\nPlease make sure your database server is running at `localhost:3306`."}}
+{"ts":"2026-05-11T03:32:19.138Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-11T03:32:19.235Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-11T04:11:19.010Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-11T04:11:19.069Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-11T05:15:45.005Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-11T05:15:45.041Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-11T11:22:55.599Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-11T11:22:55.638Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-11T11:47:41.117Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-11T11:47:41.208Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-11T11:55:55.063Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-11T11:55:55.092Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-11T12:04:52.998Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-11T12:04:53.175Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-11T12:08:39.445Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-11T12:08:39.477Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-11T12:29:30.292Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-11T12:29:30.317Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-11T12:29:44.350Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-11T12:29:44.368Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-11T12:33:00.359Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-11T12:33:00.459Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-11T12:33:11.186Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-11T12:33:11.269Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-11T12:33:22.771Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-11T12:33:22.915Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-11T13:00:58.587Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-11T13:00:58.700Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-11T13:01:31.773Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-11T13:01:31.815Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-11T13:01:51.570Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-11T13:01:51.606Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-11T13:09:51.494Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-11T13:09:51.612Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-11T13:10:04.381Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-11T13:10:04.514Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T01:47:10.001Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T01:47:10.064Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T04:19:57.958Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T04:19:58.107Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T04:55:01.950Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T04:55:01.992Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T04:55:17.814Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T04:55:17.897Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T04:56:07.392Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T04:56:07.415Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T04:56:28.859Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T04:56:28.969Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T04:56:38.765Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T04:56:38.804Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T05:14:28.769Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T05:14:28.801Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T05:14:52.265Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T05:14:52.319Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T06:41:45.734Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T06:41:45.818Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T06:42:09.372Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T06:42:09.407Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T06:42:27.055Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T06:42:27.081Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:00:11.696Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:00:11.732Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:00:30.208Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:00:30.234Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:00:52.361Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:00:52.388Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:01:16.657Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:01:16.695Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:03:06.083Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:03:06.109Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:03:22.389Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:03:22.430Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:09:19.620Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:09:19.693Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:10:25.856Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:10:25.884Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:10:39.159Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:10:39.185Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:14:56.835Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:14:57.000Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:15:19.427Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:15:19.461Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:17:17.261Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:17:17.340Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:17:30.935Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:17:31.011Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:17:45.657Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:17:45.794Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:18:00.661Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:18:00.849Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:18:16.901Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:18:16.985Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:18:36.071Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:18:36.154Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:18:57.421Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:18:57.492Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:33:54.239Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:33:54.300Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:40:25.161Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:40:25.233Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:48:00.423Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:48:00.508Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:48:14.662Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:48:14.716Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:48:37.700Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:48:37.795Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:48:56.632Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:48:56.714Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:49:48.442Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:49:48.500Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:50:04.953Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:50:05.045Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:50:24.120Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:50:24.211Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:50:48.594Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:50:48.699Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:51:06.435Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:51:06.530Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:56:18.802Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:56:18.955Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T07:57:00.548Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T07:57:00.676Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T08:15:00.743Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T08:15:00.780Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-12T08:15:17.253Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-12T08:15:17.286Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T02:49:05.251Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T02:49:09.535Z","level":"ERROR","msg":"DB connect failed","meta":{"message":"Can't reach database server at `localhost:3306`\n\nPlease make sure your database server is running at `localhost:3306`."}}
+{"ts":"2026-05-14T02:49:13.625Z","level":"ERROR","msg":"Seed failed","meta":{"message":"\nInvalid `prisma.leadStatusConfig.count()` invocation in\nD:\\golwalacollege\\crm-backend\\src\\index.ts:165:49\n\n  162 // ── Seed default statuses ─────────────────────────────────────────────────────\n  163 const seedStatuses = async () => {\n  164   try {\n→ 165     const count = await prisma.leadStatusConfig.count(\nCan't reach database server at `localhost:3306`\n\nPlease make sure your database server is running at `localhost:3306`."}}
+{"ts":"2026-05-14T03:55:09.980Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T03:55:10.323Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T03:55:22.165Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T03:55:22.211Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T03:55:35.749Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T03:55:35.790Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T03:55:52.939Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T03:55:52.975Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T03:57:05.694Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T03:57:05.729Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T04:01:56.189Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T04:01:56.282Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T05:14:26.976Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T05:14:27.026Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T05:15:23.086Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T05:15:23.110Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T05:53:09.986Z","level":"ERROR","msg":"Uncaught Exception","meta":{"message":"listen EADDRINUSE: address already in use 0.0.0.0:5000","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:5000\n    at Server.setupListenHandle [as _listen2] (node:net:1937:16)\n    at listenInCluster (node:net:1994:12)\n    at node:net:2203:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}}
+{"ts":"2026-05-14T06:16:08.296Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T06:16:08.323Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T06:16:26.671Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T06:16:26.692Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T06:21:35.123Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T06:21:35.159Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T06:26:01.131Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T06:26:01.194Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T06:28:13.628Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T06:28:13.678Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T06:30:45.448Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T06:30:45.485Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T06:32:54.323Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T06:32:54.350Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T06:39:15.233Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T06:39:15.302Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T06:42:21.974Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T06:42:22.003Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T06:45:07.838Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T06:45:07.895Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T06:47:01.636Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T06:47:01.661Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T06:55:48.369Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T06:55:48.410Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T06:59:39.019Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T06:59:39.049Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T07:03:41.070Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T07:03:41.100Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T07:07:10.197Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T07:07:10.223Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T07:10:09.086Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T07:10:09.115Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T07:29:20.504Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T07:29:20.523Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T07:55:00.174Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T07:55:00.205Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T07:56:08.672Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T07:56:08.703Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T07:56:18.202Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T07:56:18.231Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-14T07:56:48.054Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-14T07:56:48.081Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-15T02:25:09.181Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-15T02:25:09.212Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-15T02:30:51.824Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-15T02:30:51.854Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-15T02:32:11.219Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-15T02:32:11.278Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-15T02:33:37.140Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-15T02:33:37.170Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-15T02:41:53.723Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-15T02:41:53.758Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-15T02:45:56.491Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-15T02:45:56.552Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-15T02:45:56.631Z","level":"ERROR","msg":"Uncaught Exception","meta":{"message":"listen EADDRINUSE: address already in use 0.0.0.0:5000","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:5000\n    at Server.setupListenHandle [as _listen2] (node:net:1937:16)\n    at listenInCluster (node:net:1994:12)\n    at node:net:2203:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}}
+{"ts":"2026-05-15T02:47:59.407Z","level":"ERROR","msg":"Uncaught Exception","meta":{"message":"listen EADDRINUSE: address already in use 0.0.0.0:5000","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:5000\n    at Server.setupListenHandle [as _listen2] (node:net:1937:16)\n    at listenInCluster (node:net:1994:12)\n    at node:net:2203:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}}
+{"ts":"2026-05-15T02:51:31.397Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-15T02:51:31.520Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-15T03:49:49.998Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-15T03:49:49.998Z","level":"ERROR","msg":"Uncaught Exception","meta":{"message":"listen EADDRINUSE: address already in use 0.0.0.0:5000","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:5000\n    at Server.setupListenHandle [as _listen2] (node:net:1937:16)\n    at listenInCluster (node:net:1994:12)\n    at node:net:2203:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}}
+{"ts":"2026-05-15T03:49:50.086Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-15T04:31:57.007Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-15T04:31:57.034Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-15T04:37:17.157Z","level":"ERROR","msg":"Uncaught Exception","meta":{"message":"listen EADDRINUSE: address already in use 0.0.0.0:5000","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:5000\n    at Server.setupListenHandle [as _listen2] (node:net:1937:16)\n    at listenInCluster (node:net:1994:12)\n    at node:net:2203:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}}
+{"ts":"2026-05-15T04:37:17.160Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-15T04:37:17.467Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-15T04:40:03.966Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-15T04:40:04.015Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-15T04:55:11.859Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-15T04:55:11.903Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-15T05:09:13.166Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-15T05:09:13.198Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-15T05:39:28.664Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-15T05:39:28.684Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T05:10:40.772Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T05:10:44.841Z","level":"ERROR","msg":"DB connect failed","meta":{"message":"Can't reach database server at `localhost:3306`\n\nPlease make sure your database server is running at `localhost:3306`."}}
+{"ts":"2026-05-18T05:10:48.923Z","level":"ERROR","msg":"Seed failed","meta":{"message":"\nInvalid `prisma.leadStatusConfig.count()` invocation in\nD:\\golwalacollege\\crm-backend\\src\\index.ts:178:49\n\n  175 // ── Seed default statuses ─────────────────────────────────────────────────────\n  176 const seedStatuses = async () => {\n  177   try {\n→ 178     const count = await prisma.leadStatusConfig.count(\nCan't reach database server at `localhost:3306`\n\nPlease make sure your database server is running at `localhost:3306`."}}
+{"ts":"2026-05-18T05:19:59.435Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T05:19:59.486Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T05:20:05.563Z","level":"ERROR","msg":"Seed failed","meta":{"message":"\nInvalid `prisma.leadStatusConfig.count()` invocation in\nD:\\golwalacollege\\crm-backend\\src\\index.ts:178:49\n\n  175 // ── Seed default statuses ─────────────────────────────────────────────────────\n  176 const seedStatuses = async () => {\n  177   try {\n→ 178     const count = await prisma.leadStatusConfig.count(\nCan't reach database server at `localhost:3306`\n\nPlease make sure your database server is running at `localhost:3306`."}}
+{"ts":"2026-05-18T05:20:47.848Z","level":"ERROR","msg":"Health check DB failed","meta":{"message":"\nInvalid `prisma.$queryRaw()` invocation:\n\n\nCan't reach database server at `localhost:3306`\n\nPlease make sure your database server is running at `localhost:3306`."}}
+{"ts":"2026-05-18T05:23:11.297Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T05:23:11.333Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T06:09:10.514Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T06:09:10.537Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T06:20:10.734Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T06:20:10.765Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T06:20:18.505Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T06:20:18.527Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T06:20:24.510Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T06:20:24.535Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T06:20:31.175Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T06:20:31.201Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T06:20:40.670Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T06:20:40.703Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T06:21:49.048Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T06:21:49.104Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T06:21:56.407Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T06:21:56.447Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T06:22:15.343Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T06:22:15.376Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T06:22:20.321Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T06:22:20.353Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T06:22:30.151Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T06:22:30.190Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T07:39:11.422Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T07:39:11.447Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T07:40:00.771Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T07:40:00.800Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T07:40:10.836Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T07:40:10.862Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T07:40:18.386Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T07:40:18.414Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T07:52:34.727Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T07:52:34.751Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T11:26:43.440Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T11:26:43.499Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T11:26:53.383Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T11:26:53.434Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T11:27:11.143Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-05-18T11:27:11.213Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-05-18T11:39:21.442Z","level":"ERROR","msg":"Unhandled Rejection","meta":{"message":"\nInvalid `prisma.adminUser.findMany()` invocation in\nD:\\golwalacollege\\crm-backend\\src\\routes\\admins.ts:11:41\n\n   8 \n   9 // Get all admins with permissions + program assignments\n  10 router.get(\"/\", auth, superOnly, async (_req: AuthRequest, res: Response): Promise<void> => {\n→ 11   const admins = await prisma.adminUser.findMany(\nThe column `golwala_leads.permissions.can_receive_student_notifications` does not exist in the current database.","stack":"PrismaClientKnownRequestError: \nInvalid `prisma.adminUser.findMany()` invocation in\nD:\\golwalacollege\\crm-backend\\src\\routes\\admins.ts:11:41\n\n   8 \n   9 // Get all admins with permissions + program assignments\n  10 router.get(\"/\", auth, superOnly, async (_req: AuthRequest, res: Response): Promise<void> => {\n→ 11   const admins = await prisma.adminUser.findMany(\nThe column `golwala_leads.permissions.can_receive_student_notifications` does not exist in the current database.\n    at $n.handleRequestError (D:\\golwalacollege\\crm-backend\\node_modules\\@prisma\\client\\runtime\\library.js:121:7315)\n    at $n.handleAndLogRequestError (D:\\golwalacollege\\crm-backend\\node_modules\\@prisma\\client\\runtime\\library.js:121:6623)\n    at $n.request (D:\\golwalacollege\\crm-backend\\node_modules\\@prisma\\client\\runtime\\library.js:121:6307)\n    at async l (D:\\golwalacollege\\crm-backend\\node_modules\\@prisma\\client\\runtime\\library.js:130:9633)\n    at async <anonymous> (D:\\golwalacollege\\crm-backend\\src\\routes\\admins.ts:11:18)"}}
+{"ts":"2026-10-19T11:00:48.969Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-10-19T11:00:49.300Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-10-19T11:00:49.338Z","level":"ERROR","msg":"Seed failed","meta":{"message":"\nInvalid `db_1.prisma.leadStatusConfig.count()` invocation in\nD:\\golwalacollege\\crm-backend\\dist\\index.js:172:58\n\n  169 // ── Seed default statuses ─────────────────────────────────────────────────────\n  170 const seedStatuses = async () => {\n  171     try {\n→ 172         const count = await db_1.prisma.leadStatusConfig.count(\nThe table `lead_status_configs` does not exist in the current database."}}
+{"ts":"2026-10-19T12:20:35.048Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-10-19T12:20:35.086Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-10-19T13:03:26.737Z","level":"ERROR","msg":"Unhandled Rejection","meta":{"message":"\nInvalid `prisma.adminUser.findMany()` invocation in\nD:\\golwalacollege\\crm-backend\\src\\routes\\admins.ts:11:41\n\n   8 \n   9 // Get all admins with permissions + program assignments\n  10 router.get(\"/\", auth, superOnly, async (_req: AuthRequest, res: Response): Promise<void> => {\n→ 11   const admins = await prisma.adminUser.findMany(\nThe column `golwala_leads.permissions.can_receive_student_notifications` does not exist in the current database.","stack":"PrismaClientKnownRequestError: \nInvalid `prisma.adminUser.findMany()` invocation in\nD:\\golwalacollege\\crm-backend\\src\\routes\\admins.ts:11:41\n\n   8 \n   9 // Get all admins with permissions + program assignments\n  10 router.get(\"/\", auth, superOnly, async (_req: AuthRequest, res: Response): Promise<void> => {\n→ 11   const admins = await prisma.adminUser.findMany(\nThe column `golwala_leads.permissions.can_receive_student_notifications` does not exist in the current database.\n    at $n.handleRequestError (D:\\golwalacollege\\crm-backend\\node_modules\\@prisma\\client\\runtime\\library.js:121:7315)\n    at $n.handleAndLogRequestError (D:\\golwalacollege\\crm-backend\\node_modules\\@prisma\\client\\runtime\\library.js:121:6623)\n    at $n.request (D:\\golwalacollege\\crm-backend\\node_modules\\@prisma\\client\\runtime\\library.js:121:6307)\n    at async l (D:\\golwalacollege\\crm-backend\\node_modules\\@prisma\\client\\runtime\\library.js:130:9633)\n    at async <anonymous> (D:\\golwalacollege\\crm-backend\\src\\routes\\admins.ts:11:18)"}}
+{"ts":"2026-10-21T05:18:53.469Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-10-21T05:18:53.500Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-10-21T05:56:29.266Z","level":"ERROR","msg":"Unhandled Rejection","meta":{"message":"\nInvalid `prisma.adminUser.findMany()` invocation in\nD:\\golwalacollege\\crm-backend\\src\\routes\\admins.ts:11:41\n\n   8 \n   9 // Get all admins with permissions + program assignments\n  10 router.get(\"/\", auth, superOnly, async (_req: AuthRequest, res: Response): Promise<void> => {\n→ 11   const admins = await prisma.adminUser.findMany(\nThe column `golwala_leads.permissions.can_receive_student_notifications` does not exist in the current database.","stack":"PrismaClientKnownRequestError: \nInvalid `prisma.adminUser.findMany()` invocation in\nD:\\golwalacollege\\crm-backend\\src\\routes\\admins.ts:11:41\n\n   8 \n   9 // Get all admins with permissions + program assignments\n  10 router.get(\"/\", auth, superOnly, async (_req: AuthRequest, res: Response): Promise<void> => {\n→ 11   const admins = await prisma.adminUser.findMany(\nThe column `golwala_leads.permissions.can_receive_student_notifications` does not exist in the current database.\n    at $n.handleRequestError (D:\\golwalacollege\\crm-backend\\node_modules\\@prisma\\client\\runtime\\library.js:121:7315)\n    at $n.handleAndLogRequestError (D:\\golwalacollege\\crm-backend\\node_modules\\@prisma\\client\\runtime\\library.js:121:6623)\n    at $n.request (D:\\golwalacollege\\crm-backend\\node_modules\\@prisma\\client\\runtime\\library.js:121:6307)\n    at async l (D:\\golwalacollege\\crm-backend\\node_modules\\@prisma\\client\\runtime\\library.js:130:9633)\n    at async <anonymous> (D:\\golwalacollege\\crm-backend\\src\\routes\\admins.ts:11:18)"}}
+{"ts":"2026-10-21T06:03:34.204Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-10-21T06:03:34.267Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-10-21T06:46:49.581Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-10-21T06:46:49.633Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-10-21T07:04:35.382Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-10-21T07:04:35.449Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-10-21T07:45:28.373Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-10-21T07:45:28.404Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-10-21T07:46:41.638Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-10-21T07:46:41.662Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-10-21T07:48:30.231Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-10-21T07:48:30.273Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-10-21T09:42:14.949Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-10-21T09:42:15.047Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-10-21T10:38:20.105Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-10-21T10:38:20.149Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-10-21T11:34:40.680Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-10-21T11:34:40.765Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-10-21T11:42:58.981Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-10-21T11:42:59.112Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-10-21T11:43:50.858Z","level":"ERROR","msg":"Uncaught Exception","meta":{"message":"listen EADDRINUSE: address already in use 0.0.0.0:5000","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:5000\n    at Server.setupListenHandle [as _listen2] (node:net:1937:16)\n    at listenInCluster (node:net:1994:12)\n    at node:net:2203:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}}
+{"ts":"2026-10-21T15:41:20.534Z","level":"ERROR","msg":"Uncaught Exception","meta":{"message":"listen EADDRINUSE: address already in use 0.0.0.0:5000","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:5000\n    at Server.setupListenHandle [as _listen2] (node:net:1937:16)\n    at listenInCluster (node:net:1994:12)\n    at node:net:2203:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}}
+{"ts":"2026-10-21T15:41:20.535Z","level":"ERROR","msg":"Uncaught Exception","meta":{"message":"listen EADDRINUSE: address already in use 0.0.0.0:5000","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:5000\n    at Server.setupListenHandle [as _listen2] (node:net:1937:16)\n    at listenInCluster (node:net:1994:12)\n    at node:net:2203:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}}
+{"ts":"2026-10-21T15:41:20.532Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-10-21T15:41:21.280Z","level":"INFO","msg":"DB connected"}

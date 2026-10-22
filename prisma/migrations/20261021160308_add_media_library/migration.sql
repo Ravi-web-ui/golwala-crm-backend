@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS `media_library` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `type` VARCHAR(10) NOT NULL,
+  `filename` VARCHAR(255) NOT NULL,
+  `url` VARCHAR(500) NOT NULL,
+  `thumbnail_url` VARCHAR(500) NULL,
+  `size` INT NOT NULL,
+  `mime_type` VARCHAR(100) NOT NULL,
+  `title` VARCHAR(255) NULL,
+  `alt_text` VARCHAR(255) NULL,
+  `caption` TEXT NULL,
+  `uploaded_by` INT NULL,
+  `tags` TEXT NULL,
+  `usage_count` INT NOT NULL DEFAULT 0,
+  `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`id`),
+  INDEX `media_library_type_idx`(`type`),
+  INDEX `media_library_createdAt_idx`(`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

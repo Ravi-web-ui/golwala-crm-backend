@@ -20,6 +20,11 @@ import institutesRoutes     from "./routes/institutes";
 import courseMappingsRoutes from "./routes/courseMappings";
 import studentAdmissionsRoutes from "./routes/studentAdmissions";
 import studentApplicationsView from "./routes/studentApplicationsView";
+import siteConfigRoutes        from "./routes/siteConfig";
+import galleryRoutes           from "./routes/gallery";
+import eventsRoutes            from "./routes/events";
+import websiteActivitiesRoutes from "./routes/websiteActivities";
+import mediaLibraryRoutes      from "./routes/mediaLibrary";
 import { prisma }       from "./db";
 
 // ── Error log setup ───────────────────────────────────────────────────────────
@@ -53,6 +58,9 @@ process.on("unhandledRejection", (err: any) => {
 const app = express();
 const isProd = process.env.NODE_ENV === "production";
 
+// Trust proxy - required for rate limiting behind reverse proxy (Hostinger)
+app.set('trust proxy', 1);
+
 // Gzip compress all responses
 app.use(compression());
 
@@ -83,11 +91,22 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    // Allow requests with no origin (like mobile apps, curl, Postman)
+    if (!origin) return cb(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      return cb(null, true);
+    }
+    
     writeLog("WARN", `CORS blocked: ${origin}`);
     cb(new Error("Not allowed by CORS"));
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Type', 'Authorization'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 
 app.use(express.json({ limit: "10mb" }));
@@ -99,8 +118,22 @@ app.use((req, _res, next) => {
 });
 
 // Rate limiters
-const formLimiter  = rateLimit({ windowMs: 15 * 60 * 1000, max: 10,  message: { error: "Too many submissions, try later" } });
-const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20,  message: { error: "Too many login attempts" } });
+const formLimiter  = rateLimit({ 
+  windowMs: 1 * 60 * 1000, // 1 minute window
+  max: 5000,  // Allow 5000 submissions per minute (83 per second) - handles high traffic
+  message: { error: "Too many submissions, try later" },
+  standardHeaders: true,
+  legacyHeaders: false,
+  // Skip rate limiting for successful requests to allow burst traffic
+  skipSuccessfulRequests: false,
+});
+const loginLimiter = rateLimit({ 
+  windowMs: 15 * 60 * 1000, 
+  max: 20,  
+  message: { error: "Too many login attempts" },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use("/api/auth",       loginLimiter, authRoutes);
@@ -118,8 +151,21 @@ app.use("/api/statuses",        statusesRoutes);
 app.use("/api/contact",         contactRoutes);
 app.use("/api/institutes",      institutesRoutes);
 app.use("/api/course-mappings", courseMappingsRoutes);
-app.use("/api/student-admissions", formLimiter, studentAdmissionsRoutes);
+app.use("/api/student-admissions", (req, res, next) => {
+  if (req.method === "POST" && req.path === "/") return formLimiter(req, res, next);
+  next();
+}, studentAdmissionsRoutes);
 app.use("/api/student-applications-view", studentApplicationsView);
+
+// Dynamic website content routes
+app.use("/api/site-config",         siteConfigRoutes);
+app.use("/api/gallery",             galleryRoutes);
+app.use("/api/events",              eventsRoutes);
+app.use("/api/website-activities",  websiteActivitiesRoutes);
+app.use("/api/media-library",       mediaLibraryRoutes);
+
+// Serve uploaded files as static
+app.use("/uploads", express.static(path.join(process.cwd(), "src", "uploads")));
 
 // Health check
 app.get("/api/health", async (_req, res) => {

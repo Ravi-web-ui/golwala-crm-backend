@@ -18,11 +18,11 @@ router.get("/", auth, superOnly, async (_req: AuthRequest, res: Response): Promi
 // Get current user's permissions
 router.get("/my-permissions", auth, async (req: AuthRequest, res: Response): Promise<void> => {
   if (req.user?.role === "super_admin") {
-    res.json({ canViewLeads: true, canEditLeads: true, canDeleteLeads: true, canExportLeads: true, canViewReports: true, canManageFilters: true });
+    res.json({ canViewLeads: true, canEditLeads: true, canDeleteLeads: true, canExportLeads: true, canViewReports: true, canManageFilters: true, canReceiveStudentNotifications: true });
     return;
   }
   const perm = await prisma.permission.findUnique({ where: { adminId: req.user!.id } });
-  res.json(perm || { canViewLeads: true, canEditLeads: true, canDeleteLeads: false, canExportLeads: false, canViewReports: true, canManageFilters: true });
+  res.json(perm || { canViewLeads: true, canEditLeads: true, canDeleteLeads: false, canExportLeads: false, canViewReports: true, canManageFilters: true, canReceiveStudentNotifications: false });
 });
 
 // Create sub-admin / manager
@@ -60,12 +60,12 @@ router.post("/", auth, superOnly, async (req: AuthRequest, res: Response): Promi
 // Update permissions
 router.patch("/:id/permissions", auth, superOnly, async (req: AuthRequest, res: Response): Promise<void> => {
   const adminId = parseInt(req.params.id as string);
-  const { canViewLeads, canEditLeads, canDeleteLeads, canExportLeads, canViewReports, canManageFilters } = req.body;
+  const { canViewLeads, canEditLeads, canDeleteLeads, canExportLeads, canViewReports, canManageFilters, canReceiveStudentNotifications } = req.body;
   try {
     await prisma.permission.upsert({
       where: { adminId },
-      update: { canViewLeads, canEditLeads, canDeleteLeads, canExportLeads, canViewReports, canManageFilters },
-      create: { adminId, canViewLeads, canEditLeads, canDeleteLeads, canExportLeads, canViewReports, canManageFilters },
+      update: { canViewLeads, canEditLeads, canDeleteLeads, canExportLeads, canViewReports, canManageFilters, canReceiveStudentNotifications },
+      create: { adminId, canViewLeads, canEditLeads, canDeleteLeads, canExportLeads, canViewReports, canManageFilters, canReceiveStudentNotifications },
     });
     res.json({ message: "Permissions updated" });
   } catch {

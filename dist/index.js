@@ -24,6 +24,11 @@ const institutes_1 = __importDefault(require("./routes/institutes"));
 const courseMappings_1 = __importDefault(require("./routes/courseMappings"));
 const studentAdmissions_1 = __importDefault(require("./routes/studentAdmissions"));
 const studentApplicationsView_1 = __importDefault(require("./routes/studentApplicationsView"));
+const siteConfig_1 = __importDefault(require("./routes/siteConfig"));
+const gallery_1 = __importDefault(require("./routes/gallery"));
+const events_1 = __importDefault(require("./routes/events"));
+const websiteActivities_1 = __importDefault(require("./routes/websiteActivities"));
+const mediaLibrary_1 = __importDefault(require("./routes/mediaLibrary"));
 const db_1 = require("./db");
 // ── Error log setup ───────────────────────────────────────────────────────────
 const LOG_DIR = path_1.default.join(process.cwd(), "logs");
@@ -55,6 +60,8 @@ process.on("unhandledRejection", (err) => {
 // ── App ───────────────────────────────────────────────────────────────────────
 const app = (0, express_1.default)();
 const isProd = process.env.NODE_ENV === "production";
+// Trust proxy - required for rate limiting behind reverse proxy (Hostinger)
+app.set('trust proxy', 1);
 // Gzip compress all responses
 app.use((0, compression_1.default)());
 // Security headers
@@ -83,12 +90,21 @@ const allowedOrigins = [
 ].filter(Boolean);
 app.use((0, cors_1.default)({
     origin: (origin, cb) => {
-        if (!origin || allowedOrigins.includes(origin))
+        // Allow requests with no origin (like mobile apps, curl, Postman)
+        if (!origin)
             return cb(null, true);
+        if (allowedOrigins.includes(origin)) {
+            return cb(null, true);
+        }
         writeLog("WARN", `CORS blocked: ${origin}`);
         cb(new Error("Not allowed by CORS"));
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Content-Type', 'Authorization'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204
 }));
 app.use(express_1.default.json({ limit: "10mb" }));
 // Request logger (prod: file only, dev: console)
@@ -98,8 +114,22 @@ app.use((req, _res, next) => {
     next();
 });
 // Rate limiters
-const formLimiter = (0, express_rate_limit_1.default)({ windowMs: 15 * 60 * 1000, max: 10, message: { error: "Too many submissions, try later" } });
-const loginLimiter = (0, express_rate_limit_1.default)({ windowMs: 15 * 60 * 1000, max: 20, message: { error: "Too many login attempts" } });
+const formLimiter = (0, express_rate_limit_1.default)({
+    windowMs: 1 * 60 * 1000, // 1 minute window
+    max: 5000, // Allow 5000 submissions per minute (83 per second) - handles high traffic
+    message: { error: "Too many submissions, try later" },
+    standardHeaders: true,
+    legacyHeaders: false,
+    // Skip rate limiting for successful requests to allow burst traffic
+    skipSuccessfulRequests: false,
+});
+const loginLimiter = (0, express_rate_limit_1.default)({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    message: { error: "Too many login attempts" },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use("/api/auth", loginLimiter, auth_1.default);
 app.use("/api/leads", (req, res, next) => {
@@ -117,8 +147,20 @@ app.use("/api/statuses", statuses_1.default);
 app.use("/api/contact", contact_1.default);
 app.use("/api/institutes", institutes_1.default);
 app.use("/api/course-mappings", courseMappings_1.default);
-app.use("/api/student-admissions", formLimiter, studentAdmissions_1.default);
+app.use("/api/student-admissions", (req, res, next) => {
+    if (req.method === "POST" && req.path === "/")
+        return formLimiter(req, res, next);
+    next();
+}, studentAdmissions_1.default);
 app.use("/api/student-applications-view", studentApplicationsView_1.default);
+// Dynamic website content routes
+app.use("/api/site-config", siteConfig_1.default);
+app.use("/api/gallery", gallery_1.default);
+app.use("/api/events", events_1.default);
+app.use("/api/website-activities", websiteActivities_1.default);
+app.use("/api/media-library", mediaLibrary_1.default);
+// Serve uploaded files as static
+app.use("/uploads", express_1.default.static(path_1.default.join(process.cwd(), "src", "uploads")));
 // Health check
 app.get("/api/health", async (_req, res) => {
     try {

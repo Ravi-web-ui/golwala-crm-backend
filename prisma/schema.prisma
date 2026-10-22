@@ -6,6 +6,8 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+  // Connection pool settings for high concurrency
+  // These are applied via the connection string
 }
 
 model AdminUser {
@@ -24,20 +26,22 @@ model AdminUser {
   activities       Activity[]
   followUps        FollowUp[]
   callLogs         CallLog[]
+  mediaUploads     MediaLibrary[]
 
   @@map("admin_users")
 }
 
 model Permission {
-  id               Int      @id @default(autoincrement())
-  adminId          Int      @unique @map("admin_id")
-  canViewLeads     Boolean  @default(true)  @map("can_view_leads")
-  canEditLeads     Boolean  @default(true)  @map("can_edit_leads")
-  canDeleteLeads   Boolean  @default(false) @map("can_delete_leads")
-  canExportLeads   Boolean  @default(false) @map("can_export_leads")
-  canViewReports   Boolean  @default(true)  @map("can_view_reports")
-  canManageFilters Boolean  @default(true)  @map("can_manage_filters")
-  updatedAt        DateTime @updatedAt      @map("updated_at")
+  id                              Int      @id @default(autoincrement())
+  adminId                         Int      @unique @map("admin_id")
+  canViewLeads                    Boolean  @default(true)  @map("can_view_leads")
+  canEditLeads                    Boolean  @default(true)  @map("can_edit_leads")
+  canDeleteLeads                  Boolean  @default(false) @map("can_delete_leads")
+  canExportLeads                  Boolean  @default(false) @map("can_export_leads")
+  canViewReports                  Boolean  @default(true)  @map("can_view_reports")
+  canManageFilters                Boolean  @default(true)  @map("can_manage_filters")
+  canReceiveStudentNotifications  Boolean  @default(false) @map("can_receive_student_notifications")
+  updatedAt                       DateTime @updatedAt      @map("updated_at")
 
   admin AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
 
@@ -263,6 +267,11 @@ model StudentAdmission {
   id                   Int      @id @default(autoincrement())
   applicationNo        String?  @unique @map("application_no") @db.VarChar(50)
   
+  // Program Selection
+  programCategory      String?  @map("program_category") @db.VarChar(100)
+  programType          String?  @map("program_type") @db.VarChar(100)
+  programName          String?  @map("program_name") @db.VarChar(255)
+  
   // Personal Details
   surname              String   @db.VarChar(100)
   firstName            String   @map("first_name") @db.VarChar(100)
@@ -392,4 +401,87 @@ model StudentSubjectOffered {
   
   @@index([admissionId])
   @@map("student_subjects_offered")
+}
+
+
+// ─── Dynamic Website Content ──────────────────────────────────────────────────
+
+model SiteConfig {
+  id         Int      @id @default(autoincrement())
+  key        String   @unique @db.VarChar(50)
+  topbarText String?  @db.Text        @map("topbar_text")
+  buttonName String?  @db.VarChar(100) @map("button_name")
+  buttonLink String?  @db.VarChar(500) @map("button_link")
+  enabled    Boolean  @default(true)
+  updatedAt  DateTime @updatedAt      @map("updated_at")
+
+  @@map("site_config")
+}
+
+model GalleryMedia {
+  id        Int      @id @default(autoincrement())
+  type      String   @db.VarChar(10)
+  filename  String   @db.VarChar(255)
+  url       String   @db.VarChar(500)
+  size      Int
+  mimeType  String   @db.VarChar(100) @map("mime_type")
+  section   String   @db.VarChar(50)
+  sortOrder Int      @default(0)      @map("sort_order")
+  createdAt DateTime @default(now())  @map("created_at")
+
+  @@index([section])
+  @@index([section, sortOrder])
+  @@map("gallery_media")
+}
+
+model Event {
+  id             Int      @id @default(autoincrement())
+  title          String   @db.VarChar(255)
+  imageUrl       String   @db.VarChar(500) @map("image_url")
+  eventDate      DateTime @map("event_date")
+  status         String   @default("active") @db.VarChar(20)
+  movedToGallery Boolean  @default(false)   @map("moved_to_gallery")
+  createdAt      DateTime @default(now())   @map("created_at")
+  updatedAt      DateTime @updatedAt        @map("updated_at")
+
+  @@index([status])
+  @@index([eventDate])
+  @@map("events")
+}
+
+model ActivityItem {
+  id        Int      @id @default(autoincrement())
+  section   String   @db.VarChar(100)
+  type      String   @db.VarChar(10)
+  url       String   @db.VarChar(500)
+  filename  String   @db.VarChar(255)
+  heading   String   @db.VarChar(255)
+  sortOrder Int      @default(0)     @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([section])
+  @@map("activity_items")
+}
+
+model MediaLibrary {
+  id           Int        @id @default(autoincrement())
+  type         String     @db.VarChar(10)
+  filename     String     @db.VarChar(255)
+  url          String     @db.VarChar(500)
+  thumbnailUrl String?    @db.VarChar(500) @map("thumbnail_url")
+  size         Int
+  mimeType     String     @db.VarChar(100) @map("mime_type")
+  title        String?    @db.VarChar(255)
+  altText      String?    @db.VarChar(255) @map("alt_text")
+  caption      String?    @db.Text
+  uploadedBy   Int?       @map("uploaded_by")
+  uploader     AdminUser? @relation(fields: [uploadedBy], references: [id], onDelete: SetNull)
+  tags         String?    @db.Text
+  usageCount   Int        @default(0)      @map("usage_count")
+  createdAt    DateTime   @default(now())  @map("created_at")
+  updatedAt    DateTime   @updatedAt       @map("updated_at")
+
+  @@index([type])
+  @@index([createdAt])
+  @@map("media_library")
 }
