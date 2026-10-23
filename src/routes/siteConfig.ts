@@ -13,6 +13,12 @@ router.get("/", async (_req: Request, res: Response): Promise<void> => {
         data: { key: "topbar", topbarText: "Admissions Open for 2027-28", buttonName: "Apply Now", buttonLink: "/admissions", enabled: true },
       });
     }
+    
+    // Add cache-control headers to prevent caching
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
     res.json(config);
   } catch (e: any) {
     res.status(500).json({ error: e.message });
