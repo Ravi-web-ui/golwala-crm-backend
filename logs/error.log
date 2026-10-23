@@ -404,3 +404,5 @@
 {"ts":"2026-10-21T15:41:20.535Z","level":"ERROR","msg":"Uncaught Exception","meta":{"message":"listen EADDRINUSE: address already in use 0.0.0.0:5000","stack":"Error: listen EADDRINUSE: address already in use 0.0.0.0:5000\n    at Server.setupListenHandle [as _listen2] (node:net:1937:16)\n    at listenInCluster (node:net:1994:12)\n    at node:net:2203:7\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)"}}
 {"ts":"2026-10-21T15:41:20.532Z","level":"INFO","msg":"Server running on port 5000 [development]"}
 {"ts":"2026-10-21T15:41:21.280Z","level":"INFO","msg":"DB connected"}
+{"ts":"2026-10-23T06:24:18.679Z","level":"INFO","msg":"Server running on port 5000 [development]"}
+{"ts":"2026-10-23T06:24:19.069Z","level":"INFO","msg":"DB connected"}
