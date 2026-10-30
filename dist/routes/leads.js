@@ -399,8 +399,8 @@ router.get("/meta/stats", auth_1.auth, async (req, res) => {
     }
     const [total, byStatus, byLevel, today] = await db_1.prisma.$transaction([
         db_1.prisma.lead.count({ where }),
-        db_1.prisma.lead.groupBy({ by: ["status"], where, _count: { _all: true }, orderBy: { _count: { status: "desc" } } }),
-        db_1.prisma.lead.groupBy({ by: ["programLevel"], where, _count: { _all: true }, orderBy: { _count: { programLevel: "desc" } } }),
+        db_1.prisma.lead.groupBy({ by: ["status"], where: where, _count: { _all: true }, orderBy: { _count: { status: "desc" } } }),
+        db_1.prisma.lead.groupBy({ by: ["programLevel"], where: where, _count: { _all: true }, orderBy: { _count: { programLevel: "desc" } } }),
         db_1.prisma.lead.count({ where: { ...where, createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } } }),
     ]);
     res.json({

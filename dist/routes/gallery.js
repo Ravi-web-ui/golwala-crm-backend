@@ -73,8 +73,18 @@ router.post("/upload", auth_1.auth, upload.single("file"), async (req, res) => {
         return;
     }
     try {
-        const maxOrder = await db_1.prisma.galleryMedia.aggregate({ where: { section }, _max: { sortOrder: true } });
-        const nextOrder = (maxOrder._max.sortOrder ?? -1) + 1;
+        let itemOrder = 0;
+        if (section === "experiential") {
+            await db_1.prisma.galleryMedia.updateMany({
+                where: { section: "experiential" },
+                data: { sortOrder: { increment: 1 } },
+            });
+            itemOrder = 0;
+        }
+        else {
+            const maxOrder = await db_1.prisma.galleryMedia.aggregate({ where: { section }, _max: { sortOrder: true } });
+            itemOrder = (maxOrder._max.sortOrder ?? -1) + 1;
+        }
         const media = await db_1.prisma.galleryMedia.create({
             data: {
                 type: isImage ? "image" : "video",
@@ -83,7 +93,7 @@ router.post("/upload", auth_1.auth, upload.single("file"), async (req, res) => {
                 size: req.file.size,
                 mimeType: req.file.mimetype,
                 section,
-                sortOrder: nextOrder,
+                sortOrder: itemOrder,
             },
         });
         res.status(201).json(media);
@@ -94,7 +104,7 @@ router.post("/upload", auth_1.auth, upload.single("file"), async (req, res) => {
 });
 // DELETE /api/gallery/:id — admin only
 router.delete("/:id", auth_1.auth, async (req, res) => {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id), 10);
     try {
         const media = await db_1.prisma.galleryMedia.findUnique({ where: { id } });
         if (!media) {
@@ -141,34 +151,60 @@ router.post("/from-media", auth_1.auth, async (req, res) => {
             res.status(404).json({ error: "Media not found" });
             return;
         }
-        // Copy file from media library to gallery folder
+        // Find source file if on disk
         const urlParts = media.url.split("/");
         const filename = urlParts[urlParts.length - 1];
-        const month = urlParts[urlParts.length - 2];
-        const year = urlParts[urlParts.length - 3];
-        const srcPath = path_1.default.join(process.cwd(), "src", "uploads", "media", year, month, filename);
-        const destFilename = `${Date.now()}-${filename}`;
-        const destPath = path_1.default.join(UPLOAD_DIR, destFilename);
-        if (fs_1.default.existsSync(srcPath)) {
-            fs_1.default.copyFileSync(srcPath, destPath);
+        let foundSrcPath = null;
+        const possiblePaths = [
+            path_1.default.join(process.cwd(), "src", "uploads", "gallery", filename),
+            path_1.default.join(process.cwd(), "src", "uploads", "media", "2026", "10", filename),
+            path_1.default.join(process.cwd(), "..", "public", "images", "experiential", filename),
+        ];
+        if (urlParts.length >= 3) {
+            const month = urlParts[urlParts.length - 2];
+            const year = urlParts[urlParts.length - 3];
+            possiblePaths.unshift(path_1.default.join(process.cwd(), "src", "uploads", "media", year, month, filename));
+        }
+        for (const p of possiblePaths) {
+            if (fs_1.default.existsSync(p)) {
+                foundSrcPath = p;
+                break;
+            }
+        }
+        let finalUrl = media.url;
+        let finalFilename = filename;
+        let finalSize = media.size || 0;
+        if (foundSrcPath) {
+            const destFilename = `${Date.now()}-${filename}`;
+            const destPath = path_1.default.join(UPLOAD_DIR, destFilename);
+            fs_1.default.copyFileSync(foundSrcPath, destPath);
+            finalUrl = `/uploads/gallery/${destFilename}`;
+            finalFilename = destFilename;
+            finalSize = fs_1.default.statSync(destPath).size;
+        }
+        // Determine sort order
+        let itemOrder = 0;
+        if (section === "experiential") {
+            await db_1.prisma.galleryMedia.updateMany({
+                where: { section: "experiential" },
+                data: { sortOrder: { increment: 1 } },
+            });
+            itemOrder = 0;
         }
         else {
-            res.status(404).json({ error: "Source file not found" });
-            return;
+            const maxOrder = await db_1.prisma.galleryMedia.aggregate({ where: { section }, _max: { sortOrder: true } });
+            itemOrder = (maxOrder._max.sortOrder ?? -1) + 1;
         }
-        // Get next sort order
-        const maxOrder = await db_1.prisma.galleryMedia.aggregate({ where: { section }, _max: { sortOrder: true } });
-        const nextOrder = (maxOrder._max.sortOrder ?? -1) + 1;
         // Create gallery entry
         const galleryItem = await db_1.prisma.galleryMedia.create({
             data: {
                 type: media.type,
-                filename: destFilename,
-                url: `/uploads/gallery/${destFilename}`,
-                size: fs_1.default.statSync(destPath).size,
+                filename: finalFilename,
+                url: finalUrl,
+                size: finalSize,
                 mimeType: media.mimeType,
                 section,
-                sortOrder: nextOrder,
+                sortOrder: itemOrder,
             },
         });
         // Increment usage count

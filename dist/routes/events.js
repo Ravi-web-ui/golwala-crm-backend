@@ -45,21 +45,30 @@ router.get("/", async (req, res) => {
 });
 // POST /api/events — admin only
 router.post("/", auth_1.auth, upload.single("image"), async (req, res) => {
-    if (!req.file) {
-        res.status(400).json({ error: "Event image required" });
+    const { title, eventDate, startDate, endDate, imageUrl: bodyImageUrl } = req.body;
+    const targetDate = startDate || eventDate;
+    if (!title || !targetDate) {
+        res.status(400).json({ error: "Title and Event Date are required" });
         return;
     }
-    const { title, eventDate } = req.body;
-    if (!title || !eventDate) {
-        res.status(400).json({ error: "title and eventDate required" });
+    let finalImageUrl = "";
+    if (req.file) {
+        finalImageUrl = `/uploads/events/${req.file.filename}`;
+    }
+    else if (bodyImageUrl) {
+        finalImageUrl = bodyImageUrl;
+    }
+    else {
+        res.status(400).json({ error: "Event image is required (select from gallery or upload from PC)" });
         return;
     }
     try {
         const event = await db_1.prisma.event.create({
             data: {
                 title,
-                imageUrl: `/uploads/events/${req.file.filename}`,
-                eventDate: new Date(eventDate),
+                imageUrl: finalImageUrl,
+                eventDate: new Date(targetDate),
+                endDate: endDate ? new Date(endDate) : null,
                 status: "active",
             },
         });
@@ -71,12 +80,18 @@ router.post("/", auth_1.auth, upload.single("image"), async (req, res) => {
 });
 // PUT /api/events/:id — admin only (edit title/date)
 router.put("/:id", auth_1.auth, async (req, res) => {
-    const id = parseInt(req.params.id);
-    const { title, eventDate } = req.body;
+    const id = parseInt(String(req.params.id), 10);
+    const { title, eventDate, startDate, endDate, imageUrl } = req.body;
+    const targetDate = startDate || eventDate;
     try {
         const event = await db_1.prisma.event.update({
             where: { id },
-            data: { title, eventDate: eventDate ? new Date(eventDate) : undefined },
+            data: {
+                title: title !== undefined ? title : undefined,
+                imageUrl: imageUrl !== undefined ? imageUrl : undefined,
+                eventDate: targetDate ? new Date(targetDate) : undefined,
+                endDate: endDate !== undefined ? (endDate ? new Date(endDate) : null) : undefined,
+            },
         });
         res.json(event);
     }
@@ -86,7 +101,7 @@ router.put("/:id", auth_1.auth, async (req, res) => {
 });
 // DELETE /api/events/:id — admin only
 router.delete("/:id", auth_1.auth, async (req, res) => {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id), 10);
     try {
         const event = await db_1.prisma.event.findUnique({ where: { id } });
         if (!event) {
@@ -107,7 +122,7 @@ router.delete("/:id", auth_1.auth, async (req, res) => {
 });
 // PATCH /api/events/:id/action — admin only: hide | delete | move_to_gallery
 router.patch("/:id/action", auth_1.auth, async (req, res) => {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id), 10);
     const { action } = req.body; // "hide" | "delete" | "move_to_gallery"
     try {
         const event = await db_1.prisma.event.findUnique({ where: { id } });
@@ -128,27 +143,52 @@ router.patch("/:id/action", auth_1.auth, async (req, res) => {
             res.json({ message: "Deleted" });
         }
         else if (action === "move_to_gallery") {
-            // Copy image to gallery uploads folder
             const filename = path_1.default.basename(event.imageUrl);
-            const srcPath = path_1.default.join(UPLOAD_DIR, filename);
             const galleryDir = path_1.default.join(process.cwd(), "src", "uploads", "gallery");
-            const destPath = path_1.default.join(galleryDir, filename);
-            if (fs_1.default.existsSync(srcPath))
-                fs_1.default.copyFileSync(srcPath, destPath);
-            const maxOrder = await db_1.prisma.galleryMedia.aggregate({ where: { section: "experiential" }, _max: { sortOrder: true } });
-            const nextOrder = (maxOrder._max.sortOrder ?? -1) + 1;
+            if (!fs_1.default.existsSync(galleryDir))
+                fs_1.default.mkdirSync(galleryDir, { recursive: true });
+            // Check possible local file paths
+            let foundSrcPath = null;
+            const possiblePaths = [
+                path_1.default.join(UPLOAD_DIR, filename),
+                path_1.default.join(process.cwd(), "src", "uploads", "events", filename),
+                path_1.default.join(process.cwd(), "src", "uploads", "gallery", filename),
+                path_1.default.join(process.cwd(), "src", "uploads", "media", "2026", "10", filename),
+                path_1.default.join(process.cwd(), "..", "public", "images", "experiential", filename),
+            ];
+            for (const p of possiblePaths) {
+                if (fs_1.default.existsSync(p)) {
+                    foundSrcPath = p;
+                    break;
+                }
+            }
+            let finalUrl = event.imageUrl;
+            let finalSize = 0;
+            const destFilename = `${Date.now()}-${filename}`;
+            const destPath = path_1.default.join(galleryDir, destFilename);
+            if (foundSrcPath) {
+                fs_1.default.copyFileSync(foundSrcPath, destPath);
+                finalUrl = `/uploads/gallery/${destFilename}`;
+                finalSize = fs_1.default.statSync(destPath).size;
+            }
+            // Shift all existing experiential items by +1 so the new item goes to position 0 (first)
+            await db_1.prisma.galleryMedia.updateMany({
+                where: { section: "experiential" },
+                data: { sortOrder: { increment: 1 } },
+            });
             await db_1.prisma.galleryMedia.create({
                 data: {
                     type: "image",
                     filename,
-                    url: `/uploads/gallery/${filename}`,
-                    size: fs_1.default.existsSync(destPath) ? fs_1.default.statSync(destPath).size : 0,
+                    url: finalUrl,
+                    size: finalSize,
                     mimeType: "image/jpeg",
                     section: "experiential",
-                    sortOrder: nextOrder,
+                    sortOrder: 0,
                 },
             });
-            const updated = await db_1.prisma.event.update({ where: { id }, data: { status: "hidden", movedToGallery: true } });
+            // Keep event active - do NOT hide or delete from Upcoming Events!
+            const updated = await db_1.prisma.event.update({ where: { id }, data: { movedToGallery: true } });
             res.json(updated);
         }
         else {

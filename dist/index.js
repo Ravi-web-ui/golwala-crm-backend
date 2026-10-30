@@ -29,6 +29,7 @@ const gallery_1 = __importDefault(require("./routes/gallery"));
 const events_1 = __importDefault(require("./routes/events"));
 const websiteActivities_1 = __importDefault(require("./routes/websiteActivities"));
 const mediaLibrary_1 = __importDefault(require("./routes/mediaLibrary"));
+const articles_1 = __importDefault(require("./routes/articles"));
 const db_1 = require("./db");
 // ── Error log setup ───────────────────────────────────────────────────────────
 const LOG_DIR = path_1.default.join(process.cwd(), "logs");
@@ -159,8 +160,14 @@ app.use("/api/gallery", gallery_1.default);
 app.use("/api/events", events_1.default);
 app.use("/api/website-activities", websiteActivities_1.default);
 app.use("/api/media-library", mediaLibrary_1.default);
+app.use("/api/articles", articles_1.default);
 // Serve uploaded files as static
 app.use("/uploads", express_1.default.static(path_1.default.join(process.cwd(), "src", "uploads")));
+// Serve public images folder for dev and backwards-compatibility
+const PUBLIC_IMAGES_DIR = path_1.default.join(process.cwd(), "..", "public", "images");
+if (fs_1.default.existsSync(PUBLIC_IMAGES_DIR)) {
+    app.use("/images", express_1.default.static(PUBLIC_IMAGES_DIR));
+}
 // Health check
 app.get("/api/health", async (_req, res) => {
     try {

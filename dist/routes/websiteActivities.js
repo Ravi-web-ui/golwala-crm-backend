@@ -46,25 +46,39 @@ router.get("/", async (req, res) => {
 });
 // POST /api/website-activities — admin only
 router.post("/", auth_1.auth, upload.single("file"), async (req, res) => {
-    if (!req.file) {
-        res.status(400).json({ error: "File required" });
-        return;
-    }
-    const { section, heading } = req.body;
+    const { section, heading, imageUrl: bodyImageUrl, type: bodyType, startDate, endDate } = req.body;
     if (!section || !heading) {
         res.status(400).json({ error: "section and heading are required" });
         return;
     }
-    const isImage = ALLOWED_IMAGE_TYPES.includes(req.file.mimetype);
-    const isVideo = ALLOWED_VIDEO_TYPES.includes(req.file.mimetype);
-    if (isImage && req.file.size > 5 * 1024 * 1024) {
-        fs_1.default.unlinkSync(req.file.path);
-        res.status(400).json({ error: "Image exceeds 5MB limit" });
-        return;
+    let finalUrl = "";
+    let finalFilename = "";
+    let isImage = true;
+    let isVideo = false;
+    if (req.file) {
+        isImage = ALLOWED_IMAGE_TYPES.includes(req.file.mimetype);
+        isVideo = ALLOWED_VIDEO_TYPES.includes(req.file.mimetype);
+        if (isImage && req.file.size > 5 * 1024 * 1024) {
+            fs_1.default.unlinkSync(req.file.path);
+            res.status(400).json({ error: "Image exceeds 5MB limit" });
+            return;
+        }
+        if (isVideo && req.file.size > 50 * 1024 * 1024) {
+            fs_1.default.unlinkSync(req.file.path);
+            res.status(400).json({ error: "Video exceeds 50MB limit" });
+            return;
+        }
+        finalUrl = `/uploads/activities/${req.file.filename}`;
+        finalFilename = req.file.filename;
     }
-    if (isVideo && req.file.size > 50 * 1024 * 1024) {
-        fs_1.default.unlinkSync(req.file.path);
-        res.status(400).json({ error: "Video exceeds 50MB limit" });
+    else if (bodyImageUrl) {
+        finalUrl = bodyImageUrl;
+        finalFilename = path_1.default.basename(bodyImageUrl);
+        isVideo = bodyType === "video" || !!bodyImageUrl.match(/\.(mp4|webm)$/i);
+        isImage = !isVideo;
+    }
+    else {
+        res.status(400).json({ error: "File required (select from gallery or upload from PC)" });
         return;
     }
     try {
@@ -74,9 +88,11 @@ router.post("/", auth_1.auth, upload.single("file"), async (req, res) => {
             data: {
                 section,
                 type: isImage ? "image" : "video",
-                url: `/uploads/activities/${req.file.filename}`,
-                filename: req.file.filename,
+                url: finalUrl,
+                filename: finalFilename,
                 heading,
+                startDate: startDate ? new Date(startDate) : null,
+                endDate: endDate ? new Date(endDate) : null,
                 sortOrder: nextOrder,
             },
         });
@@ -86,12 +102,21 @@ router.post("/", auth_1.auth, upload.single("file"), async (req, res) => {
         res.status(500).json({ error: e.message });
     }
 });
-// PUT /api/website-activities/:id — admin only (edit heading)
+// PUT /api/website-activities/:id — admin only (edit heading/dates)
 router.put("/:id", auth_1.auth, async (req, res) => {
-    const id = parseInt(req.params.id);
-    const { heading } = req.body;
+    const id = parseInt(String(req.params.id), 10);
+    const { heading, startDate, endDate, imageUrl, type } = req.body;
     try {
-        const item = await db_1.prisma.activityItem.update({ where: { id }, data: { heading } });
+        const item = await db_1.prisma.activityItem.update({
+            where: { id },
+            data: {
+                heading: heading !== undefined ? heading : undefined,
+                url: imageUrl !== undefined ? imageUrl : undefined,
+                type: type !== undefined ? type : undefined,
+                startDate: startDate !== undefined ? (startDate ? new Date(startDate) : null) : undefined,
+                endDate: endDate !== undefined ? (endDate ? new Date(endDate) : null) : undefined,
+            },
+        });
         res.json(item);
     }
     catch (e) {
@@ -100,7 +125,7 @@ router.put("/:id", auth_1.auth, async (req, res) => {
 });
 // DELETE /api/website-activities/:id — admin only
 router.delete("/:id", auth_1.auth, async (req, res) => {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id), 10);
     try {
         const item = await db_1.prisma.activityItem.findUnique({ where: { id } });
         if (!item) {
@@ -132,46 +157,61 @@ router.patch("/reorder", auth_1.auth, async (req, res) => {
         res.status(500).json({ error: e.message });
     }
 });
-// PATCH /api/website-activities/:id/move-to-experiential — admin only
+// PATCH /api/website-activities/:id/move-to-experiential — admin only (copy to experiential without deleting)
 router.patch("/:id/move-to-experiential", auth_1.auth, async (req, res) => {
-    const id = parseInt(String(req.params.id));
+    const id = parseInt(String(req.params.id), 10);
     try {
         const activity = await db_1.prisma.activityItem.findUnique({ where: { id } });
         if (!activity) {
             res.status(404).json({ error: "Not found" });
             return;
         }
-        // Copy file to gallery uploads folder
-        const srcPath = path_1.default.join(UPLOAD_DIR, activity.filename);
         const galleryDir = path_1.default.join(process.cwd(), "src", "uploads", "gallery");
         if (!fs_1.default.existsSync(galleryDir))
             fs_1.default.mkdirSync(galleryDir, { recursive: true });
-        const destPath = path_1.default.join(galleryDir, activity.filename);
-        if (fs_1.default.existsSync(srcPath)) {
-            fs_1.default.copyFileSync(srcPath, destPath);
+        // Check possible local file paths
+        let foundSrcPath = null;
+        const possiblePaths = [
+            path_1.default.join(UPLOAD_DIR, activity.filename),
+            path_1.default.join(process.cwd(), "src", "uploads", "activities", activity.filename),
+            path_1.default.join(process.cwd(), "src", "uploads", "gallery", activity.filename),
+            path_1.default.join(process.cwd(), "src", "uploads", "media", "2026", "10", activity.filename),
+            path_1.default.join(process.cwd(), "..", "public", "images", "experiential", activity.filename),
+        ];
+        for (const p of possiblePaths) {
+            if (fs_1.default.existsSync(p)) {
+                foundSrcPath = p;
+                break;
+            }
         }
-        else {
-            res.status(404).json({ error: "Source file not found" });
-            return;
+        let finalUrl = activity.url;
+        let finalSize = 0;
+        const destFilename = `${Date.now()}-${activity.filename}`;
+        const destPath = path_1.default.join(galleryDir, destFilename);
+        if (foundSrcPath) {
+            fs_1.default.copyFileSync(foundSrcPath, destPath);
+            finalUrl = `/uploads/gallery/${destFilename}`;
+            finalSize = fs_1.default.statSync(destPath).size;
         }
-        // Get next sort order
-        const maxOrder = await db_1.prisma.galleryMedia.aggregate({ where: { section: "experiential" }, _max: { sortOrder: true } });
-        const nextOrder = (maxOrder._max.sortOrder ?? -1) + 1;
-        // Create gallery entry
+        // Shift all existing experiential items by +1 so the new item goes to position 0 (first)
+        await db_1.prisma.galleryMedia.updateMany({
+            where: { section: "experiential" },
+            data: { sortOrder: { increment: 1 } },
+        });
+        // Create gallery entry at first position (sortOrder: 0)
         await db_1.prisma.galleryMedia.create({
             data: {
                 type: activity.type,
                 filename: activity.filename,
-                url: `/uploads/gallery/${activity.filename}`,
-                size: fs_1.default.existsSync(destPath) ? fs_1.default.statSync(destPath).size : 0,
-                mimeType: activity.type === "image" ? "image/jpeg" : "video/mp4", // approximation
+                url: finalUrl,
+                size: finalSize,
+                mimeType: activity.type === "image" ? "image/jpeg" : "video/mp4",
                 section: "experiential",
-                sortOrder: nextOrder,
+                sortOrder: 0,
             },
         });
-        // Delete the activity item
-        await db_1.prisma.activityItem.delete({ where: { id } });
-        res.json({ message: "Moved to Experiential Learning" });
+        // DO NOT delete the activity item - keep it right here in Rozgar Mela!
+        res.json({ message: "Added to Experiential Learning gallery successfully", activity });
     }
     catch (e) {
         res.status(500).json({ error: e.message });

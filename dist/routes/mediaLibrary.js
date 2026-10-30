@@ -11,7 +11,7 @@ const db_1 = require("../db");
 const auth_1 = require("../middleware/auth");
 const fluent_ffmpeg_1 = __importDefault(require("fluent-ffmpeg"));
 const ffmpeg_1 = __importDefault(require("@ffmpeg-installer/ffmpeg"));
-const file_type_1 = require("file-type");
+const file_type_1 = __importDefault(require("file-type"));
 // Set ffmpeg path
 fluent_ffmpeg_1.default.setFfmpegPath(ffmpeg_1.default.path);
 const router = (0, express_1.Router)();
@@ -99,7 +99,7 @@ router.post("/upload", auth_1.auth, upload.single("file"), async (req, res) => {
     }
     // Verify file magic number matches declared MIME type
     try {
-        const detectedType = await (0, file_type_1.fileTypeFromFile)(req.file.path);
+        const detectedType = await file_type_1.default.fromFile(req.file.path);
         if (!detectedType) {
             fs_1.default.unlinkSync(req.file.path);
             res.status(400).json({ error: "Unable to verify file type" });
@@ -209,7 +209,7 @@ router.get("/", async (req, res) => {
 });
 // GET /api/media-library/:id — public/auth-optional
 router.get("/:id", async (req, res) => {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id), 10);
     try {
         const media = await db_1.prisma.mediaLibrary.findUnique({ where: { id } });
         if (!media) {
@@ -224,7 +224,7 @@ router.get("/:id", async (req, res) => {
 });
 // PUT /api/media-library/:id — admin only
 router.put("/:id", auth_1.auth, async (req, res) => {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id), 10);
     const { title, altText, caption, tags } = req.body;
     try {
         const media = await db_1.prisma.mediaLibrary.update({
@@ -244,7 +244,7 @@ router.put("/:id", auth_1.auth, async (req, res) => {
 });
 // DELETE /api/media-library/:id — admin only
 router.delete("/:id", auth_1.auth, async (req, res) => {
-    const id = parseInt(req.params.id);
+    const id = parseInt(String(req.params.id), 10);
     try {
         const media = await db_1.prisma.mediaLibrary.findUnique({ where: { id } });
         if (!media) {
