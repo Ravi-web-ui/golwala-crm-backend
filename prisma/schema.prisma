@@ -435,14 +435,15 @@ model GalleryMedia {
 }
 
 model Event {
-  id             Int      @id @default(autoincrement())
-  title          String   @db.VarChar(255)
-  imageUrl       String   @db.VarChar(500) @map("image_url")
-  eventDate      DateTime @map("event_date")
-  status         String   @default("active") @db.VarChar(20)
-  movedToGallery Boolean  @default(false)   @map("moved_to_gallery")
-  createdAt      DateTime @default(now())   @map("created_at")
-  updatedAt      DateTime @updatedAt        @map("updated_at")
+  id             Int       @id @default(autoincrement())
+  title          String    @db.VarChar(255)
+  imageUrl       String    @db.VarChar(500) @map("image_url")
+  eventDate      DateTime  @map("event_date")
+  endDate        DateTime? @map("end_date")
+  status         String    @default("active") @db.VarChar(20)
+  movedToGallery Boolean   @default(false)   @map("moved_to_gallery")
+  createdAt      DateTime  @default(now())   @map("created_at")
+  updatedAt      DateTime  @updatedAt        @map("updated_at")
 
   @@index([status])
   @@index([eventDate])
@@ -450,14 +451,16 @@ model Event {
 }
 
 model ActivityItem {
-  id        Int      @id @default(autoincrement())
-  section   String   @db.VarChar(100)
-  type      String   @db.VarChar(10)
-  url       String   @db.VarChar(500)
-  filename  String   @db.VarChar(255)
-  heading   String   @db.VarChar(255)
-  sortOrder Int      @default(0)     @map("sort_order")
-  createdAt DateTime @default(now()) @map("created_at")
+  id        Int       @id @default(autoincrement())
+  section   String    @db.VarChar(100)
+  type      String    @db.VarChar(10)
+  url       String    @db.VarChar(500)
+  filename  String    @db.VarChar(255)
+  heading   String    @db.VarChar(255)
+  startDate DateTime? @map("start_date")
+  endDate   DateTime? @map("end_date")
+  sortOrder Int       @default(0)     @map("sort_order")
+  createdAt DateTime  @default(now()) @map("created_at")
 
   @@index([section])
   @@map("activity_items")
@@ -484,4 +487,33 @@ model MediaLibrary {
   @@index([type])
   @@index([createdAt])
   @@map("media_library")
+}
+
+model Article {
+  id               Int       @id @default(autoincrement())
+  section          String    @db.VarChar(50)
+  title            String    @db.VarChar(255)
+  slug             String    @unique @db.VarChar(255)
+  featuredImage    String    @map("featured_image") @db.VarChar(500)
+  shortDescription String?   @map("short_description") @db.Text
+  content          String    @db.LongText
+  additionalImages Json?     @map("additional_images")
+  publishedAt      DateTime? @map("published_at")
+  eventDate        DateTime? @map("event_date")
+  endDate          DateTime? @map("end_date")
+  sortOrder        Int       @default(0) @map("sort_order")
+  status           String    @default("published") @db.VarChar(20)
+  seoTitle         String?   @map("seo_title") @db.VarChar(255)
+  seoDescription   String?   @map("seo_description") @db.Text
+  seoKeywords      String?   @map("seo_keywords") @db.VarChar(500)
+  canonicalUrl     String?   @map("canonical_url") @db.VarChar(500)
+  schemaCode       String?   @map("schema_code") @db.LongText
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([section])
+  @@index([section, status])
+  @@index([section, sortOrder])
+  @@index([slug])
+  @@map("articles")
 }
